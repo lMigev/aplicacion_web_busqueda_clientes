@@ -10,14 +10,23 @@ class DataMiningService:
     def __init__(self):
         pass
 
-    def search_contacts(self, criteria):
+    def search_contacts(self, criteria, save_to_db=True):
         print(f"Iniciando búsqueda para: {criteria}")
-        # Dominios a excluir (redes sociales y otros)
+        # Dominios y palabras clave a excluir (redes sociales, mapas, directorios, etc.)
         excluded_domains = [
             'facebook.com', 'instagram.com', 'twitter.com', 'linkedin.com', 'youtube.com',
             'tiktok.com', 'wa.me', 'web.whatsapp.com', 'pinterest.com', 'snapchat.com',
             'wikipedia.org', 'maps.google.com', 'goo.gl', 'bit.ly', 'messenger.com',
-            'plus.google.com', 'tumblr.com', 'reddit.com', 'telegram.me', 't.me', 'threads.net'
+            'plus.google.com', 'tumblr.com', 'reddit.com', 'telegram.me', 't.me', 'threads.net',
+            'waze.com', 'moovitapp.com', 'paginasamarillas.com', 'cybo.com', 'near-place.com',
+            'miguia.com', 'todosbiz.com', 'nexdu.com', 'amerpages.com', 'panadata.net',
+            'mapfre.com', 'es-biz.com', 'docati.com', 'panamaemprende.gob.pa',
+            'vymaps.com'  # <--- agregado filtro para vymaps.com
+        ]
+        excluded_keywords = [
+            'cómo llegar', 'como llegar', 'mapa', 'dirección', 'direccion', 'rutas', 'listado',
+            'guía', 'guia', 'horarios', 'sucursales', 'listado', 'fichas', 'mi guía', 'mi guia',
+            'páginas amarillas', 'paginas amarillas', 'directorio', 'ubicación', 'ubicacion', 'media/'
         ]
         # Buscar en motores
         google_results = self.search_google_scrape(criteria)
@@ -28,11 +37,19 @@ class DataMiningService:
         existing_contacts = Contact.query.all()
         seen = set()
         scraped_urls = set()
+        # --- NUEVO: deduplicación por dominio principal en la búsqueda actual ---
+        dominios_vistos = set()
+        # --- FIN NUEVO ---
         for i, result in enumerate(all_results):
             url = result.get('link')
             # Filtrar resultados no deseados
             if not url or any(domain in url for domain in excluded_domains):
-                print(f"❌ URL excluida por dominio: {url}")
+                print(f"❌ URL excluida por dominio irrelevante: {url}")
+                continue
+            # Filtro por palabras clave irrelevantes en nombre o url
+            nombre_resultado = (result.get('name') or '').lower()
+            if any(kw in nombre_resultado for kw in excluded_keywords) or any(kw in url.lower() for kw in excluded_keywords):
+                print(f"❌ URL excluida por palabra clave irrelevante: {url}")
                 continue
             if url.startswith('/search?') or url.startswith('https://www.google.com/search?'):
                 print(f"❌ URL excluida por ser resultado de Google Search: {url}")
@@ -41,6 +58,21 @@ class DataMiningService:
             if url in scraped_urls:
                 print(f"⚠️ URL ya scrapeada en esta búsqueda: {url}")
                 continue
+            # --- NUEVO: Omitir URLs ya presentes en la base de datos antes de scrapear ---
+            url_normalizada = url.strip().lower()
+            url_ya_guardada = Contact.query.filter(Contact.website == url_normalizada).first()
+            if url_ya_guardada:
+                print(f"⚠️ URL omitida por ya estar en la base de datos: {url}")
+                continue
+            # --- FIN NUEVO ---
+            # --- deduplicación por dominio principal en la búsqueda actual ---
+            from services.validator import DataValidator
+            dominio_actual = DataValidator.extract_domain(url)
+            if dominio_actual in dominios_vistos:
+                print(f"⚠️ Dominio ya visto en esta búsqueda: {dominio_actual}")
+                continue
+            dominios_vistos.add(dominio_actual)
+            # --- FIN NUEVO ---
             scraped_urls.add(url)
             print(f"Procesando resultado {i+1}: {url}")
             contact_data = self.scrape_contact_info(url, result.get('name'))
@@ -75,9 +107,8 @@ class DataMiningService:
             # --- FIN NUEVO ---
             # Verificar duplicados en la base de datos
             is_dup, dup_msg = DataValidator.is_duplicate(contact_data, existing_contacts)
-            
-            if not is_dup:
-                # Guardar en base de datos
+            if not is_dup and save_to_db:
+                # Guardar en base de datos solo si save_to_db=True
                 new_contact = Contact(
                     name=contact_data.get('name', 'Sin nombre'),
                     email=contact_data.get('email'),
@@ -99,9 +130,20 @@ class DataMiningService:
                 except Exception as e:
                     print(f"❌ Error guardando contacto: {e}")
                     db.session.rollback()
-            else:
+            elif is_dup:
                 print(f"⚠️ Contacto duplicado en base de datos omitido: {dup_msg}")
-            
+            # --- FILTRO: Solo agregar contactos con datos relevantes ---
+            nombre = (contact_data.get('name') or '').strip()
+            tiene_dato_util = (
+                (contact_data.get('email') and contact_data.get('email') != 'No disponible') or
+                (contact_data.get('phone') and contact_data.get('phone') != 'No disponible') or
+                (contact_data.get('location') and contact_data.get('location') != 'No disponible') or
+                (nombre and not nombre.lower().startswith('resultado de google'))
+            )
+            if not tiene_dato_util:
+                print(f"❌ Contacto omitido por no tener datos útiles: {contact_data}")
+                continue
+            # --- FIN FILTRO ---
             contacts.append(contact_data)
         
         # Guardar historial de búsqueda
@@ -122,7 +164,7 @@ class DataMiningService:
     def search_google_scrape(self, criteria):
         contacts = []
         try:
-            for url in search(criteria, num_results=3, lang="es"):
+            for url in search(criteria, num_results=15, lang="es"):
                 contacts.append({
                     "name": f"Resultado de Google: {url[:50]}...",
                     "link": url,
@@ -137,7 +179,7 @@ class DataMiningService:
         contacts = []
         try:
             with DDGS() as ddgs:
-                results = [r for r in ddgs.text(criteria, max_results=3)]
+                results = [r for r in ddgs.text(criteria, max_results=15)]
                 for r in results:
                     contacts.append({
                         "name": r.get("title", "Sin título"),

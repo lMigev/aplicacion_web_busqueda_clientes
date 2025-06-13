@@ -3,31 +3,218 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Menú Principal - Minería de Datos</title>
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <title>Proyecto CEREBRO - Minería de Datos</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <style>
+        body { 
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        .navbar {
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%) !important;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 4px 30px rgba(0,0,0,0.1);
+        }
+        
+        .navbar-brand { 
+            font-weight: 700; 
+            letter-spacing: 2px; 
+            font-size: 1.5rem;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+        }
+        
+        .main-header { 
+            background: linear-gradient(135deg, #1e40af 0%, #3b82f6 50%, #60a5fa 100%);
+            color: #fff; 
+            padding: 4rem 0 3rem 0; 
+            border-radius: 0 0 3rem 3rem;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.12);
+            margin-bottom: 4rem;
+        }
+        
+        .main-header h1 { 
+            font-size: 3.5rem; 
+            font-weight: 700; 
+            text-shadow: 0 4px 8px rgba(0,0,0,0.2);
+            margin-bottom: 1rem;
+        }
+        
+        .main-header h4 { 
+            font-size: 1.3rem; 
+            font-weight: 300; 
+            letter-spacing: 1px; 
+            opacity: 0.9;
+        }
+        
+        .main-footer { 
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            color: #fff; 
+            padding: 2rem 0; 
+            margin-top: 4rem; 
+            border-radius: 3rem 3rem 0 0;
+            box-shadow: 0 -8px 32px rgba(0,0,0,0.12);
+        }
+        
+        .btn-lg { 
+            font-size: 1.2rem; 
+            padding: 1.2rem 2rem; 
+            border-radius: 1.5rem;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .btn-primary { 
+            background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+            border: none; 
+        }
+        
+        .btn-primary:hover {
+            background: linear-gradient(135deg, #1d4ed8 0%, #1e40af 100%);
+            transform: translateY(-3px);
+            box-shadow: 0 12px 35px rgba(59, 130, 246, 0.4);
+        }
+        
+        .btn-success { 
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            border: none; 
+        }
+        
+        .btn-success:hover {
+            background: linear-gradient(135deg, #059669 0%, #047857 100%);
+            transform: translateY(-3px);
+            box-shadow: 0 12px 35px rgba(16, 185, 129, 0.4);
+        }
+        
+        .btn-warning { 
+            background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+            border: none; 
+            color: #fff;
+        }
+        
+        .btn-warning:hover {
+            background: linear-gradient(135deg, #d97706 0%, #b45309 100%);
+            transform: translateY(-3px);
+            box-shadow: 0 12px 35px rgba(245, 158, 11, 0.4);
+            color: #fff;
+        }
+        
+        .btn-info { 
+            background: linear-gradient(135deg, #06b6d4 0%, #0891b2 100%);
+            border: none; 
+        }
+        
+        .btn-info:hover {
+            background: linear-gradient(135deg, #0891b2 0%, #0e7490 100%);
+            transform: translateY(-3px);
+            box-shadow: 0 12px 35px rgba(6, 182, 212, 0.4);
+        }
+        
+        .card { 
+            border-radius: 2rem; 
+            box-shadow: 0 20px 60px rgba(0,0,0,0.1);
+            border: none;
+            backdrop-filter: blur(10px);
+            background: rgba(255,255,255,0.95);
+        }
+        
+        .lead {
+            font-size: 1.4rem;
+            font-weight: 300;
+            color: #fff;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+            margin-bottom: 3rem;
+        }
+        
+        .stats-container {
+            background: rgba(255,255,255,0.95);
+            border-radius: 2rem;
+            padding: 2rem;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.1);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255,255,255,0.2);
+        }
+        
+        .stats-title {
+            color: #1e40af;
+            font-weight: 700;
+            margin-bottom: 2rem;
+            text-align: center;
+        }
+        
+        iframe { 
+            border-radius: 1.5rem; 
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            border: none;
+        }
+        
+        @media (max-width: 768px) {
+            .main-header h1 { font-size: 2.5rem; }
+            .main-header h4 { font-size: 1.1rem; }
+            .main-header { padding: 3rem 0 2rem 0; }
+            .btn-lg { font-size: 1rem; padding: 1rem 1.5rem; }
+        }
+    </style>
 </head>
 <body>
-    <div class="container text-center">
-        <h4 class="mt-5 text-secondary">Proyecto: CEREBRO</h4>
-        <h1 class="mt-2">Aplicación de Minería de Datos</h1>
-        <p class="lead">Selecciona una opción:</p>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <div class="container">
+            <a class="navbar-brand" href="/">
+                <i class="fas fa-brain me-2"></i>Proyecto: CEREBRO
+            </a>
+        </div>
+    </nav>
+    <header class="main-header text-center mb-4">
+        <h1>Aplicación de Minería de Datos</h1>
+        <h4 class="mt-2">Solución inteligente para búsqueda y gestión de clientes</h4>
+    </header>
+    <main class="container text-center">
+        <p class="lead">Selecciona una opción para comenzar:</p>
         <div class="row justify-content-center mt-4">
-            <div class="col-md-4 mb-3">
-                <a href="/busqueda" class="btn btn-primary btn-lg btn-block">Buscar Clientes Potenciales</a>
+            <div class="col-lg-4 col-md-6 mb-4">
+                <a href="/busqueda" class="btn btn-primary btn-lg w-100">
+                    <i class="fas fa-search me-3"></i>
+                    <div>Buscar Clientes</div>
+                    <small class="d-block mt-1" style="font-size: 0.8rem; opacity: 0.8;">Encuentra nuevos contactos</small>
+                </a>
             </div>
-            <div class="col-md-4 mb-3">
-                <a href="/clientes" class="btn btn-success btn-lg btn-block">Consultar Clientes Guardados</a>
+            <div class="col-lg-4 col-md-6 mb-4">
+                <a href="/clientes" class="btn btn-success btn-lg w-100">
+                    <i class="fas fa-users me-3"></i>
+                    <div>Consultar Clientes</div>
+                    <small class="d-block mt-1" style="font-size: 0.8rem; opacity: 0.8;">Gestiona tu base de datos</small>
+                </a>
             </div>
-            <div class="col-md-4 mb-3">
-                <a href="/recomendaciones" class="btn btn-warning btn-lg btn-block">Recomendaciones Inteligentes</a>
+            <div class="col-lg-4 col-md-6 mb-4">
+                <a href="/recomendaciones" target="_blank" class="btn btn-warning btn-lg w-100">
+                    <i class="fas fa-magic me-3"></i>
+                    <div>Recomendaciones</div>
+                    <small class="d-block mt-1" style="font-size: 0.8rem; opacity: 0.8;">Búsquedas inteligentes</small>
+                </a>
             </div>
         </div>
-        <div class="row justify-content-center mt-4">
-            <div class="col-md-8 mb-3">
-                <iframe src="/estadisticas" style="width:100%;height:600px;border:none;"></iframe>
+        <div class="row justify-content-center mt-5">
+            <div class="col-12">
+                <div class="stats-container">
+                    <h3 class="stats-title">
+                        <i class="fas fa-chart-bar me-2"></i>Panel de Estadísticas
+                    </h3>
+                    <iframe src="/estadisticas" style="width:100%;height:650px;"></iframe>
+                </div>
             </div>
         </div>
-    </div>
-    {% block content %}{% endblock %}
+        {% block content %}{% endblock %}
+    </main>
+    <footer class="main-footer text-center">
+        <div class="container">
+            <span>© 2025 Proyecto CEREBRO | Minería de Datos para el sector salud</span>
+        </div>
+    </footer>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

@@ -68,22 +68,43 @@ class DataValidator:
         return min(score, 100)  # Máximo 100
     
     @staticmethod
+    def normalize_name(name):
+        import re
+        if not name:
+            return ''
+        # Quitar mayúsculas, espacios, caracteres especiales y palabras genéricas
+        name = name.lower()
+        name = re.sub(r'[^a-z0-9áéíóúüñ ]', '', name)
+        name = re.sub(r'\b(laboratorio|clinico|clínico|examenes|pruebas|sucursal|sucursales|panama|panamá|sa|s a|mi guia|guia|guía|directorio|listado|fichas|pediatrico|pediátrico|rally|raly|los pueblos|villa zaita|david|chiriquí|chiriqui|penonome|penonomé|la chorrera|chorrera|ciudad)\b', '', name)
+        name = re.sub(r'\s+', ' ', name).strip()
+        return name
+
+    @staticmethod
+    def extract_domain(url):
+        import re
+        if not url:
+            return ''
+        match = re.search(r'https?://(?:www\.)?([^/]+)', url)
+        return match.group(1).lower() if match else ''
+
+    @staticmethod
     def is_duplicate(new_contact, existing_contacts):
-        """Detecta si un contacto es duplicado"""
+        """Detecta si un contacto es duplicado (solo uno por dominio principal)"""
+        new_name = DataValidator.normalize_name(new_contact.get('name'))
+        new_domain = DataValidator.extract_domain(new_contact.get('website'))
         for existing in existing_contacts:
             # Duplicado por email
             if (new_contact.get('email') and existing.email and 
                 new_contact['email'].lower() == existing.email.lower()):
                 return True, f"Email duplicado: {existing.email}"
-            
             # Duplicado por teléfono
             if (new_contact.get('phone') and existing.phone and
                 new_contact['phone'] == existing.phone):
                 return True, f"Teléfono duplicado: {existing.phone}"
-            
-            # Duplicado por website
-            if (new_contact.get('website') and existing.website and
-                new_contact['website'] == existing.website):
-                return True, f"Website duplicado: {existing.website}"
-        
+            # Duplicado por dominio principal (sin importar el path)
+            if new_domain and existing.website and DataValidator.extract_domain(existing.website) == new_domain:
+                return True, f"Dominio principal duplicado: {new_domain}"
+            # Duplicado por nombre normalizado
+            if new_name and DataValidator.normalize_name(existing.name) == new_name:
+                return True, f"Nombre normalizado duplicado: {new_name}"
         return False, None

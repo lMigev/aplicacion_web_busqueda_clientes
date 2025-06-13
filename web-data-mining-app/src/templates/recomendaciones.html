@@ -1,39 +1,583 @@
-{% extends 'index.html' %}
-{% block content %}
-<div class="container mt-4">
-    <h2>Recomendaciones de Búsqueda Inteligente</h2>
-    <form method="post" action="{{ url_for('auto_search_bp.recomendaciones_page') }}">
-        <div class="table-responsive mt-3">
-            <table class="table table-bordered table-hover">
-                <thead class="thead-light">
-                    <tr>
-                        <th>Seleccionar</th>
-                        <th>Criterio de Búsqueda</th>
-                        <th>Motivo/Sugerencia</th>
-                    </tr>
-                </thead>
-                <tbody>
-                {% for rec in recomendaciones %}
-                    <tr>
-                        <td><input type="checkbox" name="seleccionadas" value="{{ rec.criterio }}"></td>
-                        <td>{{ rec.criterio }}</td>
-                        <td>{{ rec.motivo or '' }}</td>
-                    </tr>
-                {% endfor %}
-                </tbody>
-            </table>
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Recomendaciones Inteligentes - Proyecto CEREBRO</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body { 
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            padding: 0;
+            margin: 0;
+        }
+        
+        .navbar {
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%) !important;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 4px 30px rgba(0,0,0,0.1);
+        }
+        
+        .navbar-brand { 
+            font-weight: 700; 
+            letter-spacing: 2px; 
+            font-size: 1.5rem;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+        }
+        
+        .recommendations-hero { 
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: #fff; 
+            padding: 4rem 0 3rem 0; 
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .recommendations-hero::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 20"><defs><radialGradient id="a" cx="50" cy="50" r="50"><stop offset="0" stop-color="white" stop-opacity="0.1"/><stop offset="1" stop-color="white" stop-opacity="0"/></radialGradient></defs><circle cx="10" cy="10" r="10" fill="url(%23a)"/><circle cx="90" cy="10" r="10" fill="url(%23a)"/></svg>');
+            opacity: 0.1;
+        }
+        
+        .recommendations-hero h1 {
+            font-size: 3.5rem;
+            font-weight: 800;
+            text-shadow: 0 4px 8px rgba(0,0,0,0.3);
+            margin-bottom: 1rem;
+            position: relative;
+            z-index: 2;
+        }
+        
+        .recommendations-hero .subtitle {
+            font-size: 1.3rem;
+            opacity: 0.9;
+            font-weight: 300;
+            letter-spacing: 0.5px;
+            position: relative;
+            z-index: 2;
+        }
+        
+        .magic-icon {
+            background: linear-gradient(135deg, #fbbf24, #f59e0b);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            filter: drop-shadow(0 2px 4px rgba(251, 191, 36, 0.3));
+        }
+        
+        .recommendations-container {
+            margin-top: -2rem;
+            position: relative;
+            z-index: 10;
+        }
+        
+        .recommendations-card {
+            background: rgba(255, 255, 255, 0.98);
+            border-radius: 2.5rem;
+            box-shadow: 0 25px 80px rgba(0,0,0,0.15);
+            padding: 3rem 2.5rem;
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255,255,255,0.3);
+            margin-bottom: 2rem;
+        }
+        
+        .section-title {
+            color: #1e293b;
+            font-weight: 700;
+            font-size: 1.8rem;
+            margin-bottom: 2rem;
+            text-align: center;
+            position: relative;
+        }
+        
+        .section-title::after {
+            content: '';
+            position: absolute;
+            bottom: -0.5rem;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 4rem;
+            height: 0.3rem;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            border-radius: 0.15rem;
+        }
+        
+        .btn-execute {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            border: none;
+            border-radius: 1.5rem;
+            padding: 1.2rem 3rem;
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: #fff;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 8px 32px rgba(16, 185, 129, 0.3);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .btn-execute::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+            transition: left 0.5s;
+        }
+        
+        .btn-execute:hover::before {
+            left: 100%;
+        }
+        
+        .btn-execute:hover {
+            background: linear-gradient(135deg, #059669 0%, #047857 100%);
+            transform: translateY(-3px);
+            box-shadow: 0 15px 45px rgba(16, 185, 129, 0.4);
+            color: #fff;
+        }
+        
+        .btn-back {
+            background: linear-gradient(135deg, #6b7280 0%, #4b5563 100%);
+            border: none;
+            border-radius: 1.5rem;
+            padding: 1rem 2.5rem;
+            font-weight: 600;
+            color: #fff;
+            transition: all 0.3s ease;
+            box-shadow: 0 6px 20px rgba(107, 114, 128, 0.3);
+        }
+        
+        .btn-back:hover {
+            background: linear-gradient(135deg, #4b5563 0%, #374151 100%);
+            transform: translateY(-2px);
+            color: #fff;
+        }
+        
+        .modern-table {
+            background: #fff;
+            border-radius: 1.5rem;
+            overflow: hidden;
+            box-shadow: 0 15px 50px rgba(0,0,0,0.1);
+            border: none;
+        }
+        
+        .modern-table thead { 
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: #fff; 
+        }
+        
+        .modern-table thead th {
+            border: none;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-size: 0.9rem;
+            padding: 1.5rem 1.2rem;
+            position: relative;
+        }
+        
+        .modern-table tbody tr {
+            transition: all 0.3s ease;
+        }
+        
+        .modern-table tbody tr:hover { 
+            background: linear-gradient(90deg, #f8fafc 0%, #e2e8f0 100%);
+            transform: scale(1.01);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+        
+        .modern-table tbody tr:nth-of-type(odd) { 
+            background: linear-gradient(90deg, #f8fafc 0%, #f1f5f9 100%);
+        }
+        
+        .modern-table td {
+            border: none;
+            vertical-align: middle;
+            padding: 1.5rem 1.2rem;
+            border-bottom: 1px solid #e5e7eb;
+        }
+        
+        .custom-checkbox {
+            position: relative;
+            display: inline-block;
+        }
+        
+        .custom-checkbox input {
+            position: absolute;
+            opacity: 0;
+            cursor: pointer;
+            height: 0;
+            width: 0;
+        }
+        
+        .checkmark {
+            position: absolute;
+            top: 0;
+            left: 0;
+            height: 1.5rem;
+            width: 1.5rem;
+            background: linear-gradient(135deg, #f1f5f9, #e2e8f0);
+            border-radius: 0.5rem;
+            border: 2px solid #d1d5db;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        
+        .custom-checkbox:hover input ~ .checkmark {
+            border-color: #667eea;
+            background: linear-gradient(135deg, #ddd6fe, #c4b5fd);
+        }
+        
+        .custom-checkbox input:checked ~ .checkmark {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            border-color: #667eea;
+        }
+        
+        .checkmark:after {
+            content: "";
+            position: absolute;
+            display: none;
+            left: 0.45rem;
+            top: 0.2rem;
+            width: 0.3rem;
+            height: 0.6rem;
+            border: solid white;
+            border-width: 0 2px 2px 0;
+            transform: rotate(45deg);
+        }
+        
+        .custom-checkbox input:checked ~ .checkmark:after {
+            display: block;
+        }
+        
+        .criteria-text {
+            font-weight: 600;
+            color: #1e293b;
+            font-size: 1.1rem;
+        }
+        
+        .reason-text {
+            color: #64748b;
+            font-style: italic;
+        }
+        
+        .alert-modern {
+            border-radius: 1.5rem;
+            border: none;
+            padding: 2rem;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            backdrop-filter: blur(10px);
+        }
+        
+        .alert-success-modern {
+            background: linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%);
+            color: #047857;
+            border-left: 5px solid #10b981;
+        }
+        
+        .alert-info-modern {
+            background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%);
+            color: #1e40af;
+            border-left: 5px solid #3b82f6;
+        }
+        
+        .loading-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(102, 126, 234, 0.9);
+            z-index: 9999;
+            backdrop-filter: blur(5px);
+        }
+        
+        .loading-content {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+            color: #fff;
+        }
+        
+        .loading-spinner {
+            width: 4rem;
+            height: 4rem;
+            border: 4px solid rgba(255,255,255,0.3);
+            border-top: 4px solid #fff;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 2rem;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .pulse-animation {
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+        
+        @media (max-width: 768px) {
+            .recommendations-hero h1 { font-size: 2.5rem; }
+            .recommendations-hero { padding: 3rem 0 2rem 0; }
+            .recommendations-card { padding: 2rem 1.5rem; }
+            .modern-table { font-size: 0.9rem; }
+            .btn-execute { padding: 1rem 2rem; font-size: 1rem; }
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark">
+        <div class="container">
+            <a class="navbar-brand" href="/" target="_blank">
+                <i class="fas fa-brain me-2"></i>Proyecto: CEREBRO
+            </a>
         </div>
-        <button type="submit" class="btn btn-primary">Ejecutar Búsquedas Seleccionadas</button>
-    </form>
-    {% if resultados %}
-        <div class="alert alert-success mt-4">
-            <h5>Resultados de la búsqueda automática:</h5>
-            <ul>
-            {% for res in resultados %}
-                <li>{{ res }}</li>
-            {% endfor %}
-            </ul>
+    </nav>
+    
+    <div class="recommendations-hero">
+        <div class="container">
+            <h1 class="fw-bold mb-3">
+                <i class="fas fa-magic magic-icon me-3"></i>
+                Recomendaciones Inteligentes
+            </h1>
+            <p class="subtitle mb-0">Sistema avanzado de búsquedas automáticas basado en IA</p>
         </div>
-    {% endif %}
-</div>
-{% endblock %}
+    </div>    
+    <div class="container recommendations-container">
+        <div class="recommendations-card mx-auto">
+            <form method="post" action="{{ url_for('auto_search_bp.recomendaciones_page') }}" id="recommendationsForm">
+                <div class="mb-4">
+                    <h4 class="section-title">
+                        <i class="fas fa-lightbulb me-2 text-warning"></i>
+                        Sugerencias de Búsqueda Inteligente
+                    </h4>
+                    {% if recomendaciones %}
+                        <div class="table-responsive">
+                            <table class="modern-table table table-hover w-100">
+                                <thead>
+                                    <tr>
+                                        <th width="10%">
+                                            <label class="custom-checkbox">
+                                                <input type="checkbox" id="selectAll">
+                                                <span class="checkmark"></span>
+                                            </label>
+                                            <span class="ms-2">Todas</span>
+                                        </th>
+                                        <th width="40%">
+                                            <i class="fas fa-search me-2"></i>Criterio de Búsqueda
+                                        </th>
+                                        <th width="50%">
+                                            <i class="fas fa-brain me-2"></i>Análisis del Sistema
+                                        </th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                {% for rec in recomendaciones %}
+                                    <tr>
+                                        <td>
+                                            <label class="custom-checkbox">
+                                                <input type="checkbox" name="seleccionadas" value="{{ rec.criterio }}" class="recommendation-checkbox" id="rec_{{ loop.index }}">
+                                                <span class="checkmark"></span>
+                                            </label>
+                                        </td>
+                                        <td class="criteria-text">{{ rec.criterio }}</td>
+                                        <td class="reason-text">{{ rec.motivo or 'Búsqueda sugerida por el sistema de inteligencia artificial' }}</td>
+                                    </tr>
+                                {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                        
+                        <div class="text-center mt-5">
+                            <button type="submit" class="btn-execute me-4 pulse-animation" id="executeBtn">
+                                <i class="fas fa-rocket me-2"></i>Ejecutar Búsquedas Seleccionadas
+                            </button>
+                            <a href="/" target="_blank" class="btn-back">
+                                <i class="fas fa-home me-2"></i>Ir al Menú Principal
+                            </a>
+                        </div>
+                    {% else %}
+                        <div class="alert alert-info-modern alert-modern text-center">
+                            <i class="fas fa-info-circle me-2 fs-4"></i>
+                            <h5 class="mt-3 mb-2">No hay recomendaciones disponibles</h5>
+                            <p class="mb-0">El sistema está analizando los datos. Vuelve más tarde para obtener nuevas sugerencias.</p>
+                        </div>
+                        <div class="text-center mt-4">
+                            <a href="/" target="_blank" class="btn-back">
+                                <i class="fas fa-home me-2"></i>Volver al Menú Principal
+                            </a>
+                        </div>
+                    {% endif %}
+                </div>
+            </form>
+        </div>
+        
+        {% if resultados %}
+            <div class="recommendations-card mx-auto">
+                <div class="alert alert-success-modern alert-modern">
+                    <h5 class="mb-3">
+                        <i class="fas fa-check-circle me-2"></i>
+                        Resultados de la Búsqueda Automática
+                    </h5>
+                    <ul class="mb-0 mt-3 list-unstyled">
+                    {% for res in resultados %}
+                        <li class="mb-3 p-3 bg-white rounded-3 shadow-sm">
+                            <i class="fas fa-chart-line me-2 text-success"></i>
+                            {{ res }}
+                        </li>
+                    {% endfor %}
+                    </ul>
+                </div>
+            </div>
+        {% endif %}
+    </div>
+    
+    <!-- Loading Overlay -->
+    <div class="loading-overlay" id="loadingOverlay">
+        <div class="loading-content">
+            <div class="loading-spinner"></div>
+            <h3 class="mb-3">🧠 Cerebro Trabajando...</h3>
+            <p class="mb-0">Ejecutando búsquedas inteligentes automáticas</p>
+            <small class="d-block mt-2 opacity-75">Por favor, mantén esta pestaña abierta</small>
+        </div>
+    </div>    
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Funcionalidad para seleccionar/deseleccionar todas las recomendaciones
+        document.getElementById('selectAll')?.addEventListener('change', function() {
+            const checkboxes = document.querySelectorAll('.recommendation-checkbox');
+            checkboxes.forEach(cb => {
+                cb.checked = this.checked;
+                // Añadir pequeña animación
+                if (cb.checked) {
+                    cb.closest('tr').style.background = 'linear-gradient(90deg, #dcfce7, #bbf7d0)';
+                    setTimeout(() => {
+                        cb.closest('tr').style.background = '';
+                    }, 300);
+                }
+            });
+        });
+        
+        // Animación individual de checkboxes
+        document.querySelectorAll('.recommendation-checkbox').forEach(checkbox => {
+            checkbox.addEventListener('change', function() {
+                if (this.checked) {
+                    this.closest('tr').style.background = 'linear-gradient(90deg, #dcfce7, #bbf7d0)';
+                    setTimeout(() => {
+                        this.closest('tr').style.background = '';
+                    }, 300);
+                }
+            });
+        });
+        
+        // Mostrar overlay de carga al enviar el formulario
+        document.getElementById('recommendationsForm')?.addEventListener('submit', function(e) {
+            const selectedCheckboxes = document.querySelectorAll('.recommendation-checkbox:checked');
+            if (selectedCheckboxes.length === 0) {
+                e.preventDefault();
+                // Crear modal de alerta personalizado
+                const alertModal = document.createElement('div');
+                alertModal.className = 'position-fixed top-0 start-0 w-100 h-100 d-flex align-items-center justify-content-center';
+                alertModal.style.background = 'rgba(0,0,0,0.5)';
+                alertModal.style.zIndex = '10000';
+                alertModal.innerHTML = `
+                    <div class="bg-white p-4 rounded-4 shadow-lg text-center" style="max-width: 400px;">
+                        <i class="fas fa-exclamation-triangle text-warning fs-1 mb-3"></i>
+                        <h5 class="mb-3">Selección requerida</h5>
+                        <p class="text-muted mb-4">Por favor selecciona al menos una recomendación para ejecutar.</p>
+                        <button class="btn btn-primary" onclick="this.closest('.position-fixed').remove()">Entendido</button>
+                    </div>
+                `;
+                document.body.appendChild(alertModal);
+                return false;
+            }
+            
+            // Mostrar overlay de carga
+            document.getElementById('loadingOverlay').style.display = 'block';
+            document.getElementById('executeBtn').disabled = true;
+            
+            // Animación de los elementos seleccionados
+            selectedCheckboxes.forEach((checkbox, index) => {
+                setTimeout(() => {
+                    checkbox.closest('tr').style.background = 'linear-gradient(90deg, #dbeafe, #bfdbfe)';
+                    checkbox.closest('tr').style.transform = 'scale(0.98)';
+                }, index * 100);
+            });
+        });
+        
+        // Efecto de hover mejorado para las filas
+        document.querySelectorAll('.modern-table tbody tr').forEach(row => {
+            row.addEventListener('mouseenter', function() {
+                this.style.transform = 'scale(1.02)';
+                this.style.zIndex = '10';
+            });
+            
+            row.addEventListener('mouseleave', function() {
+                this.style.transform = 'scale(1)';
+                this.style.zIndex = '1';
+            });
+        });
+        
+        // Efecto de partículas en el botón de ejecutar
+        document.getElementById('executeBtn')?.addEventListener('click', function() {
+            // Crear efecto de partículas
+            for (let i = 0; i < 10; i++) {
+                setTimeout(() => {
+                    const particle = document.createElement('div');
+                    particle.style.position = 'absolute';
+                    particle.style.width = '4px';
+                    particle.style.height = '4px';
+                    particle.style.background = '#10b981';
+                    particle.style.borderRadius = '50%';
+                    particle.style.pointerEvents = 'none';
+                    particle.style.zIndex = '1000';
+                    
+                    const rect = this.getBoundingClientRect();
+                    particle.style.left = (rect.left + Math.random() * rect.width) + 'px';
+                    particle.style.top = (rect.top + Math.random() * rect.height) + 'px';
+                    
+                    document.body.appendChild(particle);
+                    
+                    // Animar partícula
+                    particle.animate([
+                        { transform: 'translate(0, 0) scale(1)', opacity: 1 },
+                        { transform: `translate(${Math.random() * 200 - 100}px, ${Math.random() * 200 - 100}px) scale(0)`, opacity: 0 }
+                    ], {
+                        duration: 1000,
+                        easing: 'ease-out'
+                    }).onfinish = () => particle.remove();
+                }, i * 50);
+            }
+        });
+        
+        // Quitar animación de pulso después de la primera interacción
+        document.addEventListener('click', function() {
+            document.getElementById('executeBtn')?.classList.remove('pulse-animation');
+        }, { once: true });
+    </script>
+</body>
+</html>

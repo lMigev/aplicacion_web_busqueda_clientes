@@ -3,29 +3,225 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Buscar Fisioterapeutas</title>
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <title>Buscador de Clientes</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body { 
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        .search-header { 
+            background: linear-gradient(135deg, #1e40af 0%, #3b82f6 50%, #60a5fa 100%);
+            color: #fff; 
+            border-radius: 0 0 2rem 2rem; 
+            padding: 3rem 2rem 2rem 2rem; 
+            margin-bottom: 3rem;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.12);
+        }
+        
+        .search-header h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .search-header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+        
+        .search-box {
+            box-shadow: 0 20px 60px rgba(0,0,0,0.15);
+            border-radius: 2rem;
+            background: #fff;
+            padding: 3rem 2.5rem;
+            width: 100%;
+            max-width: 800px;
+            margin-bottom: 3rem;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255,255,255,0.2);
+        }
+        
+        .form-control {
+            border-radius: 1rem;
+            border: 2px solid #e5e7eb;
+            padding: 1rem 1.5rem;
+            font-size: 1.1rem;
+            transition: all 0.3s ease;
+        }
+        
+        .form-control:focus {
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 0.2rem rgba(59, 130, 246, 0.25);
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+            border: none;
+            border-radius: 1rem;
+            padding: 1rem 2rem;
+            font-size: 1.1rem;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(59, 130, 246, 0.3);
+        }
+        
+        .btn-primary:hover {
+            background: linear-gradient(135deg, #1d4ed8 0%, #1e40af 100%);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(59, 130, 246, 0.4);
+        }
+        
+        .btn-secondary {
+            background: linear-gradient(135deg, #6b7280 0%, #4b5563 100%);
+            border: none;
+            border-radius: 1rem;
+            padding: 0.75rem 2rem;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(107, 114, 128, 0.3);
+        }
+        
+        .btn-secondary:hover {
+            background: linear-gradient(135deg, #4b5563 0%, #374151 100%);
+            transform: translateY(-2px);
+        }
+        
+        .table thead { 
+            background: linear-gradient(135deg, #1e40af 0%, #3b82f6 100%);
+            color: #fff; 
+        }
+        
+        .table thead th {
+            border: none;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            font-size: 0.9rem;
+        }
+        
+        .table-striped > tbody > tr:nth-of-type(odd) { 
+            background: linear-gradient(90deg, #f8fafc 0%, #f1f5f9 100%);
+        }
+        
+        .table {
+            background: #fff;
+            border-radius: 1rem;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+        
+        .table td {
+            border-color: #e5e7eb;
+            vertical-align: middle;
+        }
+        
+        .table td a {
+            color: #3b82f6;
+            text-decoration: none;
+            transition: color 0.3s ease;
+        }
+        
+        .table td a:hover {
+            color: #1d4ed8;
+        }
+        
+        .spinner-border { 
+            width: 3rem; 
+            height: 3rem; 
+            color: #3b82f6;
+        }
+        
+        .alert {
+            border-radius: 1rem;
+            border: none;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+        
+        .alert-info {
+            background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%);
+            color: #1e40af;
+        }
+        
+        .alert-warning {
+            background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+            color: #92400e;
+        }
+        
+        /* Tabla responsive mejorada */
+        .table-responsive { 
+            overflow-x: auto; 
+            margin: 0 -15px; 
+            padding: 0 15px;
+            border-radius: 1rem;
+        }
+        .table { 
+            width: 100%; 
+            min-width: 900px;
+            margin-bottom: 0;
+        }
+        .table td, .table th {
+            font-size: 0.95rem;
+            padding: 0.75rem 0.5rem;
+            vertical-align: middle;
+            border: 1px solid #dee2e6;
+        }
+        
+        /* Anchos específicos por columna */
+        .table th:nth-child(1), .table td:nth-child(1) { width: 25%; min-width: 200px; }
+        .table th:nth-child(2), .table td:nth-child(2) { width: 20%; min-width: 180px; }
+        .table th:nth-child(3), .table td:nth-child(3) { width: 15%; min-width: 120px; }
+        .table th:nth-child(4), .table td:nth-child(4) { width: 15%; min-width: 100px; }
+        .table th:nth-child(5), .table td:nth-child(5) { width: 25%; min-width: 200px; }
+        
+        /* Manejo de texto largo */
+        .table td {
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 0;
+        }
+        
+        @media (max-width: 768px) {
+            .table { min-width: 750px; }
+            .table td, .table th { font-size: 0.85rem; padding: 0.5rem 0.25rem; }
+            .search-header { padding: 2rem 1rem 1.5rem 1rem; }
+            .search-header h1 { font-size: 2rem; }
+            .search-box { padding: 2rem 1.5rem; }
+        }
+    </style>
 </head>
 <body>
     <div class="container">
-        <h1 class="mt-5">Buscar Fisioterapeutas</h1>
-        <form id="searchForm" class="mt-4">
-            <div class="form-group">
-                <label for="searchCriteria">Ingrese su criterio de búsqueda:</label>
-                <input type="text" class="form-control" id="searchCriteria" placeholder="Ej: Fisioterapeutas en Panamá" required>
-            </div>
-            <button type="submit" class="btn btn-primary">Buscar</button>
-        </form>
-        <div id="loadingSpinner" class="text-center mt-4" style="display:none;">
-            <div class="spinner-border text-primary" role="status">
-                <span class="sr-only">Buscando...</span>
-            </div>
-            <div>Buscando contactos, por favor espere...</div>
+        <div class="search-header text-center mb-4">
+            <h1 class="fw-bold mb-2"><i class="fa-solid fa-magnifying-glass me-3"></i>Buscador de Clientes</h1>
+            <p class="mb-0">Encuentra y gestiona contactos potenciales del sector salud</p>
         </div>
-        <div id="results" class="mt-4"></div>
-        <div class="mt-4">
-            <a href="/" class="btn btn-secondary">Volver al Menú Principal</a>
+        <div class="search-box mx-auto">
+            <form id="searchForm">
+                <div class="mb-4">
+                    <label for="searchCriteria" class="form-label fw-semibold">
+                        <i class="fa-solid fa-search me-2"></i>Criterio de búsqueda
+                    </label>
+                    <input type="text" class="form-control form-control-lg" id="searchCriteria" placeholder="Ej: Laboratorios Clínicos en Panamá" required>
+                </div>
+                <button type="submit" class="btn btn-primary btn-lg w-100 mb-4">
+                    <i class="fa-solid fa-search me-2"></i>Buscar Contactos
+                </button>
+            </form>
+            <div id="loadingSpinner" class="text-center mt-4" style="display:none;">
+                <div class="spinner-border" role="status"></div>
+                <div class="mt-3 fw-semibold">Buscando contactos, por favor espere...</div>
+            </div>
+            <div class="text-center">
+                <a href="/" class="btn btn-secondary">
+                    <i class="fa-solid fa-arrow-left me-2"></i>Volver al Menú Principal
+                </a>
+            </div>
         </div>
+        <div id="results" class="mt-5"></div>
     </div>
     <script>
         document.getElementById('searchForm').addEventListener('submit', function(event) {
@@ -38,29 +234,33 @@
                 .then(data => {
                     document.getElementById('loadingSpinner').style.display = 'none';
                     const resultsDiv = document.getElementById('results');
-                    resultsDiv.innerHTML = '';
-                    if (data.length > 0) {
+                    resultsDiv.innerHTML = '';                    if (data.mensaje) {
+                        resultsDiv.innerHTML = `<div class='alert alert-info'><i class='fa-solid fa-circle-info me-2'></i>${data.mensaje}</div>`;
+                    } else if (data.resultados && data.resultados.length > 0) {
+                        const wrapper = document.createElement('div');
+                        wrapper.className = 'table-responsive';
                         const table = document.createElement('table');
-                        table.className = 'table table-bordered';
+                        table.className = 'table table-striped table-bordered table-hover align-middle';
                         const thead = document.createElement('thead');
-                        thead.innerHTML = `<tr><th>Nombre</th><th>Correo</th><th>Teléfono</th><th>Ubicación</th><th>Página Web</th></tr>`;
+                        thead.innerHTML = `<tr><th><i class="fa-solid fa-user me-2"></i>Nombre</th><th><i class="fa-solid fa-envelope me-2"></i>Correo</th><th><i class="fa-solid fa-phone me-2"></i>Teléfono</th><th><i class="fa-solid fa-map-marker-alt me-2"></i>Ubicación</th><th><i class="fa-solid fa-link me-2"></i>Página Web</th></tr>`;
                         table.appendChild(thead);
                         const tbody = document.createElement('tbody');
-                        data.forEach(contact => {
+                        data.resultados.forEach(contact => {
                             const tr = document.createElement('tr');
                             tr.innerHTML = `
-                                <td>${contact.nombre || 'No disponible'}</td>
-                                <td>${contact.correo || 'No disponible'}</td>
-                                <td>${contact.telefono || 'No disponible'}</td>
-                                <td>${contact.ubicacion || 'No disponible'}</td>
-                                <td>${contact.pagina_web ? `<a href="${contact.pagina_web}" target="_blank">${contact.pagina_web}</a>` : 'No disponible'}</td>
+                                <td title="${contact.nombre || ''}">${contact.nombre || 'No disponible'}</td>
+                                <td title="${contact.correo || ''}">${contact.correo || 'No disponible'}</td>
+                                <td title="${contact.telefono || ''}">${contact.telefono || 'No disponible'}</td>
+                                <td title="${contact.ubicacion || ''}">${contact.ubicacion || 'No disponible'}</td>
+                                <td>${contact.pagina_web ? `<a href="${contact.pagina_web}" target="_blank"><i class='fa-solid fa-external-link-alt me-1'></i>${contact.pagina_web}</a>` : 'No disponible'}</td>
                             `;
                             tbody.appendChild(tr);
                         });
                         table.appendChild(tbody);
-                        resultsDiv.appendChild(table);
+                        wrapper.appendChild(table);
+                        resultsDiv.appendChild(wrapper);
                     } else {
-                        resultsDiv.textContent = 'No se encontraron resultados.';
+                        resultsDiv.innerHTML = `<div class='alert alert-warning'><i class='fa-solid fa-triangle-exclamation me-2'></i>No se encontraron resultados.</div>`;
                     }
                 })
                 .catch(error => {
