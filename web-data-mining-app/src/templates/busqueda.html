@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Buscar Fisioterapeutas</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+</head>
+<body>
+    <div class="container">
+        <h1 class="mt-5">Buscar Fisioterapeutas</h1>
+        <form id="searchForm" class="mt-4">
+            <div class="form-group">
+                <label for="searchCriteria">Ingrese su criterio de búsqueda:</label>
+                <input type="text" class="form-control" id="searchCriteria" placeholder="Ej: Fisioterapeutas en Panamá" required>
+            </div>
+            <button type="submit" class="btn btn-primary">Buscar</button>
+        </form>
+        <div id="loadingSpinner" class="text-center mt-4" style="display:none;">
+            <div class="spinner-border text-primary" role="status">
+                <span class="sr-only">Buscando...</span>
+            </div>
+            <div>Buscando contactos, por favor espere...</div>
+        </div>
+        <div id="results" class="mt-4"></div>
+        <div class="mt-4">
+            <a href="/" class="btn btn-secondary">Volver al Menú Principal</a>
+        </div>
+    </div>
+    <script>
+        document.getElementById('searchForm').addEventListener('submit', function(event) {
+            event.preventDefault();
+            const criteria = document.getElementById('searchCriteria').value;
+            document.getElementById('loadingSpinner').style.display = 'block';
+            document.getElementById('results').innerHTML = '';
+            fetch(`/api/search?criteria=${encodeURIComponent(criteria)}`)
+                .then(response => response.json())
+                .then(data => {
+                    document.getElementById('loadingSpinner').style.display = 'none';
+                    const resultsDiv = document.getElementById('results');
+                    resultsDiv.innerHTML = '';
+                    if (data.length > 0) {
+                        const table = document.createElement('table');
+                        table.className = 'table table-bordered';
+                        const thead = document.createElement('thead');
+                        thead.innerHTML = `<tr><th>Nombre</th><th>Correo</th><th>Teléfono</th><th>Ubicación</th><th>Página Web</th></tr>`;
+                        table.appendChild(thead);
+                        const tbody = document.createElement('tbody');
+                        data.forEach(contact => {
+                            const tr = document.createElement('tr');
+                            tr.innerHTML = `
+                                <td>${contact.nombre || 'No disponible'}</td>
+                                <td>${contact.correo || 'No disponible'}</td>
+                                <td>${contact.telefono || 'No disponible'}</td>
+                                <td>${contact.ubicacion || 'No disponible'}</td>
+                                <td>${contact.pagina_web ? `<a href="${contact.pagina_web}" target="_blank">${contact.pagina_web}</a>` : 'No disponible'}</td>
+                            `;
+                            tbody.appendChild(tr);
+                        });
+                        table.appendChild(tbody);
+                        resultsDiv.appendChild(table);
+                    } else {
+                        resultsDiv.textContent = 'No se encontraron resultados.';
+                    }
+                })
+                .catch(error => {
+                    document.getElementById('loadingSpinner').style.display = 'none';
+                    console.error('Error:', error);
+                });
+        });
+    </script>
+</body>
+</html>

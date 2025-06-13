@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Clientes Guardados</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <style>
+        .table-responsive { margin-top: 2rem; }
+        th, td {
+            vertical-align: middle !important;
+            white-space: pre-line;
+        }
+        th {
+            background: #f8f9fa;
+        }
+        td {
+            word-break: break-word;
+            max-width: 220px;
+        }
+        .table thead th {
+            min-width: 120px;
+        }
+        @media (max-width: 991px) {
+            .table thead th, .table td {
+                min-width: 100px;
+                font-size: 0.95rem;
+            }
+        }
+        @media (max-width: 767px) {
+            .table thead th, .table td {
+                min-width: 80px;
+                font-size: 0.9rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1 class="mt-5 mb-3">Clientes Guardados</h1>
+        <form id="filterForm" class="form-inline mb-3">
+            <input type="text" class="form-control mr-2 mb-2" id="filterName" placeholder="Filtrar por nombre">
+            <input type="text" class="form-control mr-2 mb-2" id="filterEmail" placeholder="Filtrar por correo">
+            <input type="number" min="0" max="100" class="form-control mr-2 mb-2" id="filterQuality" placeholder="Calidad mínima">
+            <button type="submit" class="btn btn-primary mb-2">Filtrar</button>
+            <a href="/" class="btn btn-secondary mb-2 ml-2">Menú Principal</a>
+            <a id="exportBtn" href="#" class="btn btn-success mb-2 ml-2">Exportar a CSV</a>
+        </form>
+        <div class="table-responsive" id="clientesResults"></div>
+    </div>
+
+    <div class="modal fade" id="followupModal" tabindex="-1" role="dialog" aria-labelledby="followupModalLabel" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="followupModalLabel">Seguimiento de Cliente: <span id="modalClientName"></span></h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <form id="followupForm">
+                        <input type="hidden" id="modalClientId">
+                        <div class="form-group">
+                            <label for="followupTag">Etiqueta</label>
+                            <input type="text" class="form-control" id="followupTag" maxlength="100">
+                        </div>
+                        <div class="form-group">
+                            <label for="followupNote">Nota</label>
+                            <textarea class="form-control" id="followupNote" rows="3"></textarea>
+                        </div>
+                        <button type="submit" class="btn btn-primary">Agregar Seguimiento</button>
+                    </form>
+                    <hr>
+                    <h6>Historial de Seguimiento</h6>
+                    <ul class="list-group" id="followupHistory"></ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        function fetchClientes(name = '', email = '', min_quality = '') {
+            let url = `/api/clientes?name=${encodeURIComponent(name)}&email=${encodeURIComponent(email)}&min_quality=${encodeURIComponent(min_quality)}`;
+            fetch(url)
+                .then(response => response.json())
+                .then(data => {
+                    const div = document.getElementById('clientesResults');
+                    div.innerHTML = '';
+                    if (data.length > 0) {
+                        const table = document.createElement('table');
+                        table.className = 'table table-bordered table-hover table-sm';
+                        const thead = document.createElement('thead');
+                        thead.innerHTML = `<tr>
+                            <th>Nombre</th>
+                            <th>Correo</th>
+                            <th>Teléfono</th>
+                            <th>Ubicación</th>
+                            <th>Página Web</th>
+                            <th>Fuente</th>
+                            <th>Calidad</th>
+                            <th>Búsqueda</th>
+                            <th>Fecha</th>
+                            <th>Acciones</th>
+                        </tr>`;
+                        table.appendChild(thead);
+                        const tbody = document.createElement('tbody');
+                        data.forEach(cliente => {
+                            const tr = document.createElement('tr');
+                            tr.innerHTML = `
+                                <td>${cliente.name || 'No disponible'}</td>
+                                <td>${cliente.email || 'No disponible'}</td>
+                                <td>${cliente.phone || 'No disponible'}</td>
+                                <td>${cliente.location || 'No disponible'}</td>
+                                <td>${cliente.website ? `<a href="${cliente.website}" target="_blank">${cliente.website}</a>` : 'No disponible'}</td>
+                                <td>${cliente.source || 'No disponible'}</td>
+                                <td><span class="badge badge-info">${cliente.quality_score || 0}</span></td>
+                                <td>${cliente.search_query || ''}</td>
+                                <td>${cliente.created_at ? cliente.created_at.split('T')[0] : ''}</td>
+                                <td>
+                                    <button class="btn btn-sm btn-outline-info" onclick="openFollowupModal(${cliente.id}, '${cliente.name.replace(/'/g, '\'')}')">Seguimiento</button>
+                                </td>
+                            `;
+                            tbody.appendChild(tr);
+                        });
+                        table.appendChild(tbody);
+                        div.appendChild(table);
+                    } else {
+                        div.textContent = 'No hay clientes guardados.';
+                    }
+                });
+        }
+        document.getElementById('filterForm').addEventListener('submit', function(event) {
+            event.preventDefault();
+            const name = document.getElementById('filterName').value;
+            const email = document.getElementById('filterEmail').value;
+            const min_quality = document.getElementById('filterQuality').value;
+            fetchClientes(name, email, min_quality);
+            setExportLink(name, email, min_quality);
+        });
+        function setExportLink(name, email, min_quality) {
+            const exportBtn = document.getElementById('exportBtn');
+            exportBtn.href = `/api/clientes/export?name=${encodeURIComponent(name)}&email=${encodeURIComponent(email)}&min_quality=${encodeURIComponent(min_quality)}`;
+        }
+        // Inicializar export link y cargar todos al inicio
+        setExportLink('', '', '');
+        fetchClientes();
+
+        function openFollowupModal(clientId, clientName) {
+            document.getElementById('modalClientId').value = clientId;
+            document.getElementById('modalClientName').textContent = clientName;
+            document.getElementById('followupTag').value = '';
+            document.getElementById('followupNote').value = '';
+            $('#followupModal').modal('show');
+            loadFollowupHistory(clientId);
+        }
+        function loadFollowupHistory(clientId) {
+            fetch(`/api/followups/${clientId}`)
+                .then(response => response.json())
+                .then(data => {
+                    const history = document.getElementById('followupHistory');
+                    history.innerHTML = '';
+                    if (data.length === 0) {
+                        history.innerHTML = '<li class="list-group-item">Sin seguimientos previos.</li>';
+                    } else {
+                        data.forEach(fu => {
+                            const li = document.createElement('li');
+                            li.className = 'list-group-item';
+                            li.innerHTML = `<b>Etiqueta:</b> ${fu.tag || '-'}<br><b>Nota:</b> ${fu.note || '-'}<br><small>${fu.created_at ? fu.created_at.split('T')[0] : ''}</small>`;
+                            history.appendChild(li);
+                        });
+                    }
+                });
+        }
+        document.getElementById('followupForm').addEventListener('submit', function(event) {
+            event.preventDefault();
+            const clientId = document.getElementById('modalClientId').value;
+            const tag = document.getElementById('followupTag').value;
+            const note = document.getElementById('followupNote').value;
+            fetch(`/api/followups/${clientId}`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ tag, note })
+            })
+            .then(response => response.json())
+            .then(() => {
+                loadFollowupHistory(clientId);
+                document.getElementById('followupTag').value = '';
+                document.getElementById('followupNote').value = '';
+            });
+        });
+    </script>
+</body>
+</html>

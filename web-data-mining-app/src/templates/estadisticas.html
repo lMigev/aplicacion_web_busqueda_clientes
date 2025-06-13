@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Panel de Estadísticas</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+</head>
+<body>
+<div class="container mt-4">
+    <h2>Panel de Estadísticas</h2>
+    <div class="row mt-4">
+        <div class="col-md-4 mb-3">
+            <div class="card text-white bg-info">
+                <div class="card-body">
+                    <h5 class="card-title">Total de Contactos</h5>
+                    <p class="card-text display-4" id="totalContactos">-</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4 mb-3">
+            <div class="card text-white bg-success">
+                <div class="card-body">
+                    <h5 class="card-title">Calidad Promedio</h5>
+                    <p class="card-text display-4" id="calidadPromedio">-</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4 mb-3">
+            <div class="card text-white bg-warning">
+                <div class="card-body">
+                    <h5 class="card-title">Búsquedas Realizadas</h5>
+                    <p class="card-text display-4" id="totalBusquedas">-</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row mt-4">
+        <div class="col-md-12">
+            <canvas id="graficoContactos"></canvas>
+        </div>
+    </div>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    fetch('/api/estadisticas')
+        .then(response => response.json())
+        .then(data => {
+            document.getElementById('totalContactos').textContent = data.total_contactos;
+            document.getElementById('calidadPromedio').textContent = data.calidad_promedio;
+            document.getElementById('totalBusquedas').textContent = data.total_busquedas;
+            // Gráfico de contactos por mes
+            const ctx = document.getElementById('graficoContactos').getContext('2d');
+            new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: data.contactos_por_mes.labels,
+                    datasets: [{
+                        label: 'Contactos por mes',
+                        data: data.contactos_por_mes.data,
+                        backgroundColor: 'rgba(54, 162, 235, 0.7)'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: { display: false }
+                    }
+                }
+            });
+        });
+</script>
+</body>
+</html>

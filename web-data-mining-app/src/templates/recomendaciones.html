@@ -1,0 +1,39 @@
+{% extends 'index.html' %}
+{% block content %}
+<div class="container mt-4">
+    <h2>Recomendaciones de Búsqueda Inteligente</h2>
+    <form method="post" action="{{ url_for('auto_search_bp.recomendaciones_page') }}">
+        <div class="table-responsive mt-3">
+            <table class="table table-bordered table-hover">
+                <thead class="thead-light">
+                    <tr>
+                        <th>Seleccionar</th>
+                        <th>Criterio de Búsqueda</th>
+                        <th>Motivo/Sugerencia</th>
+                    </tr>
+                </thead>
+                <tbody>
+                {% for rec in recomendaciones %}
+                    <tr>
+                        <td><input type="checkbox" name="seleccionadas" value="{{ rec.criterio }}"></td>
+                        <td>{{ rec.criterio }}</td>
+                        <td>{{ rec.motivo or '' }}</td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        <button type="submit" class="btn btn-primary">Ejecutar Búsquedas Seleccionadas</button>
+    </form>
+    {% if resultados %}
+        <div class="alert alert-success mt-4">
+            <h5>Resultados de la búsqueda automática:</h5>
+            <ul>
+            {% for res in resultados %}
+                <li>{{ res }}</li>
+            {% endfor %}
+            </ul>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}
