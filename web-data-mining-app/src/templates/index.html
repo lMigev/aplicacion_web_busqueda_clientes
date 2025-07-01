@@ -134,17 +134,19 @@
         .stats-container {
             background: rgba(255,255,255,0.95);
             border-radius: 2rem;
-            padding: 2rem;
+            padding: 1.2rem;
             box-shadow: 0 20px 60px rgba(0,0,0,0.1);
             backdrop-filter: blur(10px);
             border: 1px solid rgba(255,255,255,0.2);
+            margin-top: 2rem;
         }
         
         .stats-title {
             color: #1e40af;
             font-weight: 700;
-            margin-bottom: 2rem;
+            margin-bottom: 1rem;
             text-align: center;
+            font-size: 1.3rem;
         }
         
         iframe { 
@@ -153,11 +155,118 @@
             border: none;
         }
         
+        /* --- DISEÑO LIMPIO Y MODERNO PARA BOTONES DEL MENÚ PRINCIPAL --- */
+        .main-menu-card {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 220px;
+            border-radius: 1.5rem;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+            background: #ffffff;
+            border: 1px solid rgba(0,0,0,0.08);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            margin-bottom: 2rem;
+            position: relative;
+            overflow: hidden;
+            text-decoration: none;
+        }
+        
+        .main-menu-card:hover {
+            text-decoration: none;
+        }
+        
+        .main-menu-card .icon {
+            font-size: 3.2rem;
+            margin-bottom: 1.2rem;
+            transition: all 0.3s ease;
+        }
+        
+        .main-menu-card .title {
+            font-size: 1.25rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+            letter-spacing: 0.5px;
+            text-align: center;
+        }
+        
+        .main-menu-card .desc {
+            font-size: 0.95rem;
+            text-align: center;
+            font-weight: 400;
+            line-height: 1.4;
+            padding: 0 1rem;
+        }
+        
+        /* Colores específicos para cada botón */
+        .main-menu-card.search-card {
+            background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+            color: white;
+        }
+        
+        .main-menu-card.search-card .icon {
+            color: #ffffff;
+        }
+        
+        .main-menu-card.search-card .title,
+        .main-menu-card.search-card .desc {
+            color: #ffffff;
+        }
+        
+        .main-menu-card.clients-card {
+            background: linear-gradient(135deg, #059669 0%, #10b981 100%);
+            color: white;
+        }
+        
+        .main-menu-card.clients-card .icon {
+            color: #ffffff;
+        }
+        
+        .main-menu-card.clients-card .title,
+        .main-menu-card.clients-card .desc {
+            color: #ffffff;
+        }
+        
+        .main-menu-card.crm-card {
+            background: linear-gradient(135deg, #dc2626 0%, #f97316 100%);
+            color: white;
+        }
+        
+        .main-menu-card.crm-card .icon {
+            color: #ffffff;
+        }
+        
+        .main-menu-card.crm-card .title,
+        .main-menu-card.crm-card .desc {
+            color: #ffffff;
+        }
+        
+        /* Efectos hover */
+        .main-menu-card:hover {
+            transform: translateY(-8px);
+        }
+        
+        .main-menu-card.search-card:hover {
+            box-shadow: 0 15px 35px rgba(79, 70, 229, 0.3);
+        }
+        
+        .main-menu-card.clients-card:hover {
+            box-shadow: 0 15px 35px rgba(5, 150, 105, 0.3);
+        }
+        
+        .main-menu-card.crm-card:hover {
+            box-shadow: 0 15px 35px rgba(220, 38, 38, 0.3);
+        }
         @media (max-width: 768px) {
             .main-header h1 { font-size: 2.5rem; }
             .main-header h4 { font-size: 1.1rem; }
             .main-header { padding: 3rem 0 2rem 0; }
             .btn-lg { font-size: 1rem; padding: 1rem 1.5rem; }
+            .main-menu-card { min-height: 150px; }
+            .main-menu-card .icon { font-size: 2.2rem; }
+            .main-menu-card .title { font-size: 1.08rem; }
+            .main-menu-card .desc { font-size: 0.89rem; }
         }
     </style>
 </head>
@@ -167,6 +276,9 @@
             <a class="navbar-brand" href="/">
                 <i class="fas fa-brain me-2"></i>Proyecto: CEREBRO
             </a>
+            <button id="logoutBtn" class="btn btn-danger ms-auto d-none" style="border-radius:1.5rem; font-weight:600;">
+                <i class="fas fa-sign-out-alt me-2"></i>Cerrar sesión
+            </button>
         </div>
     </nav>
     <header class="main-header text-center mb-4">
@@ -177,34 +289,34 @@
         <p class="lead">Selecciona una opción para comenzar:</p>
         <div class="row justify-content-center mt-4">
             <div class="col-lg-4 col-md-6 mb-4">
-                <a href="/busqueda" class="btn btn-primary btn-lg w-100">
-                    <i class="fas fa-search me-3"></i>
-                    <div>Buscar Clientes</div>
-                    <small class="d-block mt-1" style="font-size: 0.8rem; opacity: 0.8;">Encuentra nuevos contactos</small>
+                <a href="/busqueda" class="main-menu-card search-card w-100 text-decoration-none">
+                    <span class="icon"><i class="fas fa-search"></i></span>
+                    <span class="title">BUSCAR CLIENTES</span>
+                    <span class="desc">Encuentra nuevos contactos o usa la búsqueda inteligente</span>
                 </a>
             </div>
             <div class="col-lg-4 col-md-6 mb-4">
-                <a href="/clientes" class="btn btn-success btn-lg w-100">
-                    <i class="fas fa-users me-3"></i>
-                    <div>Consultar Clientes</div>
-                    <small class="d-block mt-1" style="font-size: 0.8rem; opacity: 0.8;">Gestiona tu base de datos</small>
+                <a href="/clientes" class="main-menu-card clients-card w-100 text-decoration-none">
+                    <span class="icon"><i class="fas fa-users"></i></span>
+                    <span class="title">CONSULTAR CLIENTES</span>
+                    <span class="desc">Gestiona tu base de datos</span>
                 </a>
             </div>
             <div class="col-lg-4 col-md-6 mb-4">
-                <a href="/recomendaciones" target="_blank" class="btn btn-warning btn-lg w-100">
-                    <i class="fas fa-magic me-3"></i>
-                    <div>Recomendaciones</div>
-                    <small class="d-block mt-1" style="font-size: 0.8rem; opacity: 0.8;">Búsquedas inteligentes</small>
+                <a href="/crm" class="main-menu-card crm-card w-100 text-decoration-none">
+                    <span class="icon"><i class="fas fa-briefcase"></i></span>
+                    <span class="title">PANEL CRM</span>
+                    <span class="desc">Seguimiento y oportunidades</span>
                 </a>
             </div>
         </div>
-        <div class="row justify-content-center mt-5">
+        <div class="row justify-content-center mt-3">
             <div class="col-12">
                 <div class="stats-container">
                     <h3 class="stats-title">
                         <i class="fas fa-chart-bar me-2"></i>Panel de Estadísticas
                     </h3>
-                    <iframe src="/estadisticas" style="width:100%;height:650px;"></iframe>
+                    <iframe src="/estadisticas" style="width:100%;height:500px;border-radius:1.2rem;"></iframe>
                 </div>
             </div>
         </div>
@@ -216,5 +328,15 @@
         </div>
     </footer>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Mostrar el botón de logout si hay JWT
+        if (localStorage.getItem('jwt')) {
+            document.getElementById('logoutBtn').classList.remove('d-none');
+        }
+        document.getElementById('logoutBtn')?.addEventListener('click', function() {
+            localStorage.removeItem('jwt');
+            window.location.href = '/auth/login';
+        });
+    </script>
 </body>
 </html>

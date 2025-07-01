@@ -1,0 +1,177 @@
+<div class="d-flex flex-row flex-nowrap overflow-auto pb-3">
+    {% for estado in estados %}
+    <div class="kanban-col flex-shrink-0 {% if estado == 'Obsoleto' %}obsoleto{% endif %}" data-estado="{{ estado }}">
+        <div class="kanban-header {% if estado == 'Obsoleto' %}obsoleto{% endif %}">
+            {{ estado }}
+            {% if estado == 'Obsoleto' %}
+            <i class="fas fa-ban ms-1"></i>
+            {% endif %}
+            <span class="kanban-count" id="count-{{ estado|replace(' ', '-') }}">
+                {{ oportunidades[estado]|length }}
+                {% if totales_por_estado and totales_por_estado[estado] > oportunidades[estado]|length %}
+                / {{ totales_por_estado[estado] }}
+                {% endif %}
+            </span>
+        </div>
+        
+        <div class="kanban-cards-container" id="cards-{{ estado|replace(' ', '-') }}">
+            {% for opp in oportunidades[estado] %}
+            <div class="kanban-card">
+                <div class="priority-indicator priority-{{ opp.prioridad|lower }}"></div>
+                
+                <div class="contact-name">{{ opp.contact.name|clean_text }}</div>
+                
+                <div class="contact-info">
+                    {% if opp.contact.email %}
+                    <div class="contact-detail">
+                        <i class="fas fa-envelope"></i>
+                        <a href="mailto:{{ opp.contact.email }}">{{ opp.contact.email }}</a>
+                    </div>
+                    {% endif %}
+                    {% if opp.contact.phone %}
+                    <div class="contact-detail">
+                        <i class="fas fa-phone"></i>
+                        <a href="tel:{{ opp.contact.phone }}">{{ opp.contact.phone }}</a>
+                    </div>
+                    {% endif %}
+                    {% if opp.contact.location %}
+                    <div class="contact-detail">
+                        <i class="fas fa-map-marker-alt"></i>
+                        <span>{{ opp.contact.location }}</span>
+                    </div>
+                    {% endif %}
+                </div>
+                
+                {% if opp.valor_estimado and opp.valor_estimado > 0 %}
+                <div class="valor-estimado">
+                    💰 ${{ "{:,.0f}".format(opp.valor_estimado) }}
+                    <span class="probabilidad-badge">{{ opp.probabilidad }}%</span>
+                </div>
+                {% endif %}
+                
+                <div class="last-contact">
+                    <i class="fas fa-clock me-1"></i>
+                    Última actividad: {{ opp.ultima_actividad.strftime('%d/%m/%Y %H:%M') if opp.ultima_actividad else 'Sin actividad' }}
+                </div>
+                
+                {% if opp.tareas %}
+                <div class="task-summary">
+                    {% set tareas_pendientes = opp.tareas|selectattr('completada', 'equalto', false)|list|length %}
+                    {% set tareas_completadas = opp.tareas|selectattr('completada', 'equalto', true)|list|length %}
+                    <i class="fas fa-tasks me-1"></i>
+                    <span class="task-pending">{{ tareas_pendientes }} pendientes</span>
+                    <span class="task-completed">• {{ tareas_completadas }} completadas</span>
+                </div>
+                {% endif %}
+                
+                <div class="accordion-section">
+                    <div class="accordion-header" onclick="toggleAccordion(this)">
+                        <i class="fas fa-cog me-1"></i>Gestión Rápida
+                        <i class="fas fa-chevron-down float-end"></i>
+                    </div>
+                    <div class="accordion-content" style="display: none;">
+                        <!-- Cambio de estado y nota juntos -->
+                        <form method="post" action="{{ url_for('crm_bp.guardar_estado_nota', opp_id=opp.id) }}" class="mb-2">
+                            <select name="estado" class="form-select form-select-sm mb-2">
+                                {% for est in estados %}
+                                    <option value="{{ est }}" {% if est == opp.estado %}selected{% endif %}>{{ est }}</option>
+                                {% endfor %}
+                            </select>
+                            <textarea name="nota" class="form-control mb-2" rows="2" placeholder="Agregar nota...">{{ opp.nota or '' }}</textarea>
+                            <button class="btn btn-primary btn-sm w-100 mb-2">
+                                <i class="fas fa-save me-1"></i>Guardar Nota y Estado
+                            </button>
+                        </form>
+                        
+                        <!-- Agregar tarea -->
+                        <form method="post" action="{{ url_for('crm_bp.agregar_tarea', opp_id=opp.id) }}">
+                            <input name="descripcion" class="form-control mb-2" placeholder="Nueva tarea..." required>
+                            <div class="row g-1 mb-2">
+                                <div class="col-6">
+                                    <select name="prioridad" class="form-select form-select-sm">
+                                        <option value="Media">Media</option>
+                                        <option value="Alta">Alta</option>
+                                        <option value="Baja">Baja</option>
+                                    </select>
+                                </div>
+                                <div class="col-6">
+                                    <input type="date" name="fecha_vencimiento" class="form-control form-control-sm">
+                                </div>
+                            </div>
+                            <button class="btn btn-secondary btn-sm w-100">
+                                <i class="fas fa-plus me-1"></i>Agregar Tarea
+                            </button>
+                        </form>
+                        
+                        <div class="mt-2">
+                            <a href="{{ url_for('crm_bp.detalle_oportunidad', opp_id=opp.id) }}" 
+                               class="btn btn-outline-info btn-sm w-100">
+                                <i class="fas fa-eye me-1"></i>Ver Detalle
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Lista de tareas con estado -->
+                {% if opp.tareas %}
+                <div class="accordion-section">
+                    <div class="accordion-header" onclick="toggleAccordion(this)">
+                        <i class="fas fa-list me-1"></i>Tareas ({{ opp.tareas|length }})
+                        <i class="fas fa-chevron-down float-end"></i>
+                    </div>
+                    <div class="accordion-content" style="display: none; max-height: 150px; overflow-y: auto;">
+                        {% for tarea in opp.tareas|sort(attribute='fecha_vencimiento') %}
+                        <div class="d-flex justify-content-between align-items-center mb-2 p-2 
+                                   {% if tarea.completada %}bg-success bg-opacity-10{% elif tarea.fecha_vencimiento and tarea.fecha_vencimiento|is_overdue %}bg-danger bg-opacity-10{% endif %} 
+                                   rounded">
+                            <div class="flex-grow-1">
+                                <div class="fw-bold">{{ tarea.descripcion }}</div>
+                                {% if tarea.asignado_a %}
+                                <small class="text-primary">
+                                    <i class="fas fa-user me-1"></i>{{ tarea.asignado_a.username }}
+                                </small>
+                                {% else %}
+                                <small class="text-muted">
+                                    <i class="fas fa-user-slash me-1"></i>Sin asignar
+                                </small>
+                                {% endif %}
+                                {% if tarea.fecha_vencimiento %}
+                                <small class="text-muted d-block">
+                                    Vence: {{ tarea.fecha_vencimiento.strftime('%d/%m/%Y') }}
+                                </small>
+                                {% endif %}
+                            </div>
+                            {% if not tarea.completada %}
+                            <button type="button" class="btn btn-sm btn-outline-success" 
+                                    onclick="abrirModalCompletarTarea({{ tarea.id }}, '{{ tarea.descripcion|e }}')">
+                                <i class="far fa-circle"></i>
+                            </button>
+                            {% else %}
+                            <span class="badge bg-success">
+                                <i class="fas fa-check"></i>
+                            </span>
+                            {% endif %}
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+            {% endfor %}
+        </div>
+        
+        <!-- Botón "Cargar más" para cada columna -->
+        {% if totales_por_estado and totales_por_estado[estado] > oportunidades[estado]|length %}
+        <div class="text-center mt-3">
+            <button class="btn btn-outline-primary btn-sm cargar-mas-btn" 
+                    data-estado="{{ estado }}" 
+                    data-offset="{{ oportunidades[estado]|length }}"
+                    onclick="cargarMasOportunidades('{{ estado }}', {{ oportunidades[estado]|length }})">
+                <i class="fas fa-chevron-down me-1"></i>
+                Cargar más ({{ totales_por_estado[estado] - oportunidades[estado]|length }} restantes)
+            </button>
+        </div>
+        {% endif %}
+    </div>
+    {% endfor %}
+</div>

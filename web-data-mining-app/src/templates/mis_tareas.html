@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <title>Mis Tareas - CRM</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <style>
+        body { 
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        .tasks-header {
+            background: linear-gradient(135deg, #1e40af 0%, #3b82f6 50%, #60a5fa 100%);
+            color: #fff; 
+            padding: 1.5rem 0; 
+            border-radius: 0 0 2rem 2rem;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.12);
+            margin-bottom: 2rem;
+        }
+        
+        .stats-card {
+            background: rgba(255,255,255,0.95);
+            border-radius: 1rem;
+            padding: 1.5rem;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255,255,255,0.2);
+            transition: transform 0.3s ease;
+        }
+        
+        .stats-card:hover {
+            transform: translateY(-3px);
+        }
+        
+        .task-card {
+            background: rgba(255,255,255,0.95);
+            border-radius: 1rem;
+            margin-bottom: 1rem;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.08);
+            transition: all 0.3s ease;
+            border-left: 4px solid #3b82f6;
+        }
+        
+        .task-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 30px rgba(0,0,0,0.12);
+        }
+        
+        .task-card.priority-alta {
+            border-left-color: #ef4444;
+        }
+        
+        .task-card.priority-media {
+            border-left-color: #f59e0b;
+        }
+        
+        .task-card.priority-baja {
+            border-left-color: #10b981;
+        }
+        
+        .task-card.overdue {
+            background: rgba(239, 68, 68, 0.05);
+            border-left-color: #dc2626;
+        }
+        
+        .task-card.completed {
+            background: rgba(16, 185, 129, 0.05);
+            border-left-color: #059669;
+            opacity: 0.8;
+        }
+        
+        .priority-badge {
+            font-size: 0.75rem;
+            padding: 0.25rem 0.5rem;
+            border-radius: 0.5rem;
+            font-weight: 600;
+        }
+        
+        .priority-alta {
+            background: rgba(239, 68, 68, 0.1);
+            color: #dc2626;
+        }
+        
+        .priority-media {
+            background: rgba(245, 158, 11, 0.1);
+            color: #d97706;
+        }
+        
+        .priority-baja {
+            background: rgba(16, 185, 129, 0.1);
+            color: #059669;
+        }
+        
+        .filters-panel {
+            background: rgba(255,255,255,0.95);
+            border-radius: 1rem;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.08);
+        }
+        
+        .btn-modern {
+            border-radius: 0.75rem;
+            padding: 0.75rem 1.5rem;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            border: none;
+        }
+        
+        .btn-primary-modern {
+            background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+            color: white;
+        }
+        
+        .btn-primary-modern:hover {
+            background: linear-gradient(135deg, #1d4ed8 0%, #1e40af 100%);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(59, 130, 246, 0.4);
+        }
+        
+        .btn-success-modern {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            color: white;
+        }
+        
+        .btn-success-modern:hover {
+            background: linear-gradient(135deg, #059669 0%, #047857 100%);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(16, 185, 129, 0.4);
+        }
+        
+        .metric-value {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #1e293b;
+        }
+        
+        .metric-label {
+            color: #64748b;
+            font-size: 0.9rem;
+            font-weight: 500;
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header class="tasks-header">
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col-md-8">
+                    <h1 class="h2 mb-1">
+                        <i class="fas fa-tasks me-2"></i>
+                        Mis Tareas Asignadas
+                    </h1>
+                    <p class="mb-0 opacity-75">
+                        Bienvenido, {{ usuario_actual.username }} - Gestiona tus tareas pendientes
+                    </p>
+                </div>
+                <div class="col-md-4 text-end">
+                    <a href="{{ url_for('crm_bp.crm_panel') }}" class="btn btn-light btn-modern me-2">
+                        <i class="fas fa-arrow-left me-1"></i>Volver al CRM
+                    </a>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <div class="container">
+        <!-- Estadísticas -->
+        <div class="row mb-4">
+            <div class="col-md-3">
+                <div class="stats-card text-center">
+                    <div class="metric-value text-primary">{{ estadisticas.total }}</div>
+                    <div class="metric-label">Total Tareas</div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="stats-card text-center">
+                    <div class="metric-value text-warning">{{ estadisticas.pendientes }}</div>
+                    <div class="metric-label">Pendientes</div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="stats-card text-center">
+                    <div class="metric-value text-success">{{ estadisticas.completadas }}</div>
+                    <div class="metric-label">Completadas</div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="stats-card text-center">
+                    <div class="metric-value text-danger">{{ estadisticas.vencidas }}</div>
+                    <div class="metric-label">Vencidas</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Filtros -->
+        <div class="filters-panel">
+            <form method="GET" class="row g-3">
+                <input type="hidden" name="usuario" value="{{ usuario_actual.username }}">
+                
+                <div class="col-md-3">
+                    <label class="form-label fw-semibold">Estado:</label>
+                    <select name="estado" class="form-select">
+                        <option value="pendientes" {% if estado_filter == 'pendientes' %}selected{% endif %}>Pendientes</option>
+                        <option value="completadas" {% if estado_filter == 'completadas' %}selected{% endif %}>Completadas</option>
+                        <option value="vencidas" {% if estado_filter == 'vencidas' %}selected{% endif %}>Vencidas</option>
+                        <option value="" {% if not estado_filter %}selected{% endif %}>Todas</option>
+                    </select>
+                </div>
+                
+                <div class="col-md-3">
+                    <label class="form-label fw-semibold">Prioridad:</label>
+                    <select name="prioridad" class="form-select">
+                        <option value="">Todas</option>
+                        <option value="Alta" {% if prioridad_filter == 'Alta' %}selected{% endif %}>Alta</option>
+                        <option value="Media" {% if prioridad_filter == 'Media' %}selected{% endif %}>Media</option>
+                        <option value="Baja" {% if prioridad_filter == 'Baja' %}selected{% endif %}>Baja</option>
+                    </select>
+                </div>
+                
+                <div class="col-md-3 d-flex align-items-end">
+                    <button type="submit" class="btn btn-primary-modern btn-modern">
+                        <i class="fas fa-filter me-1"></i>Filtrar
+                    </button>
+                </div>
+                
+                <div class="col-md-3 d-flex align-items-end">
+                    <div class="dropdown">
+                        <button class="btn btn-outline-secondary dropdown-toggle btn-modern" type="button" data-bs-toggle="dropdown">
+                            <i class="fas fa-user me-1"></i>Cambiar Usuario
+                        </button>
+                        <ul class="dropdown-menu">
+                            {% for user in usuarios %}
+                            <li>
+                                <a class="dropdown-item" href="{{ url_for('crm_bp.mis_tareas', usuario=user.username) }}">
+                                    <i class="fas fa-user me-2"></i>{{ user.username }}
+                                    <small class="text-muted d-block">{{ user.email }}</small>
+                                </a>
+                            </li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                </div>
+            </form>
+        </div>
+
+        <!-- Lista de Tareas -->
+        <div class="row">
+            <div class="col-12">
+                {% if tareas %}
+                    {% for tarea in tareas %}
+                    <div class="task-card priority-{{ tarea.prioridad.lower() }} 
+                         {% if tarea.completada %}completed{% elif tarea.fecha_vencimiento and tarea.fecha_vencimiento|is_overdue %}overdue{% endif %}">
+                        <div class="card-body p-4">
+                            <div class="row align-items-start">
+                                <div class="col-md-8">
+                                    <div class="d-flex align-items-center mb-2">
+                                        <h5 class="mb-0 me-3">{{ tarea.descripcion }}</h5>
+                                        <span class="priority-badge priority-{{ tarea.prioridad.lower() }}">
+                                            {{ tarea.prioridad }}
+                                        </span>
+                                        {% if tarea.completada %}
+                                        <span class="badge bg-success ms-2">
+                                            <i class="fas fa-check me-1"></i>Completada
+                                        </span>
+                                        {% elif tarea.fecha_vencimiento and tarea.fecha_vencimiento|is_overdue %}
+                                        <span class="badge bg-danger ms-2">
+                                            <i class="fas fa-exclamation-triangle me-1"></i>Vencida
+                                        </span>
+                                        {% endif %}
+                                    </div>
+                                    
+                                    <div class="text-muted mb-2">
+                                        <i class="fas fa-user me-1"></i>
+                                        <strong>Cliente:</strong> {{ tarea.opportunity.contact.name|clean_text }}
+                                        {% if tarea.opportunity.contact.email %}
+                                        <span class="ms-2">
+                                            <i class="fas fa-envelope me-1"></i>{{ tarea.opportunity.contact.email }}
+                                        </span>
+                                        {% endif %}
+                                    </div>
+                                    
+                                    <div class="text-muted mb-2">
+                                        <i class="fas fa-briefcase me-1"></i>
+                                        <strong>Oportunidad:</strong> {{ tarea.opportunity.estado }}
+                                        {% if tarea.opportunity.valor_estimado %}
+                                        <span class="ms-2 text-success fw-semibold">
+                                            ${{ "{:,.0f}".format(tarea.opportunity.valor_estimado) }}
+                                        </span>
+                                        {% endif %}
+                                    </div>
+                                    
+                                    {% if tarea.fecha_vencimiento %}
+                                    <div class="text-muted">
+                                        <i class="fas fa-calendar me-1"></i>
+                                        <strong>Vence:</strong> {{ tarea.fecha_vencimiento.strftime('%d/%m/%Y %H:%M') }}
+                                    </div>
+                                    {% endif %}
+                                    
+                                    {% if tarea.resultado %}
+                                    <div class="mt-2 p-2 bg-light rounded">
+                                        <small class="text-muted">
+                                            <i class="fas fa-comment me-1"></i>
+                                            <strong>Resultado:</strong> {{ tarea.resultado }}
+                                        </small>
+                                    </div>
+                                    {% endif %}
+                                </div>
+                                
+                                <div class="col-md-4 text-end">
+                                    {% if not tarea.completada %}
+                                    <button class="btn btn-success-modern btn-modern btn-sm" 
+                                            data-bs-toggle="modal" 
+                                            data-bs-target="#completarModal"
+                                            data-tarea-id="{{ tarea.id }}"
+                                            data-tarea-desc="{{ tarea.descripcion }}">
+                                        <i class="fas fa-check me-1"></i>Completar
+                                    </button>
+                                    {% endif %}
+                                    
+                                    <a href="{{ url_for('crm_bp.detalle_oportunidad', opp_id=tarea.opportunity.id) }}" 
+                                       class="btn btn-outline-primary btn-modern btn-sm ms-2">
+                                        <i class="fas fa-eye me-1"></i>Ver Oportunidad
+                                    </a>
+                                    
+                                    {% if tarea.completada and tarea.fecha_completada %}
+                                    <div class="mt-2">
+                                        <small class="text-success">
+                                            <i class="fas fa-check-circle me-1"></i>
+                                            Completada el {{ tarea.fecha_completada.strftime('%d/%m/%Y %H:%M') }}
+                                        </small>
+                                    </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                    <div class="text-center py-5">
+                        <div class="stats-card d-inline-block">
+                            <i class="fas fa-tasks text-muted mb-3" style="font-size: 3rem;"></i>
+                            <h4 class="text-muted">No hay tareas</h4>
+                            <p class="text-muted mb-0">
+                                {% if estado_filter == 'pendientes' %}
+                                No tienes tareas pendientes en este momento.
+                                {% elif estado_filter == 'completadas' %}
+                                No tienes tareas completadas.
+                                {% elif estado_filter == 'vencidas' %}
+                                No tienes tareas vencidas.
+                                {% else %}
+                                No tienes tareas asignadas.
+                                {% endif %}
+                            </p>
+                        </div>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal para Completar Tarea -->
+    <div class="modal fade" id="completarModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <form method="POST" id="completarForm">
+                    <input type="hidden" name="usuario" value="{{ usuario_actual.username }}">
+                    <div class="modal-header">
+                        <h5 class="modal-title">
+                            <i class="fas fa-check me-2"></i>Completar Tarea
+                        </h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <p class="mb-3">
+                            <strong>Tarea:</strong> <span id="tareaDescripcion"></span>
+                        </p>
+                        <div class="mb-3">
+                            <label class="form-label">Resultado/Comentarios:</label>
+                            <textarea name="resultado" class="form-control" rows="3" 
+                                    placeholder="Describe el resultado de la tarea..."></textarea>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                        <button type="submit" class="btn btn-success-modern btn-modern">
+                            <i class="fas fa-check me-1"></i>Completar Tarea
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Configurar modal de completar tarea
+        document.getElementById('completarModal').addEventListener('show.bs.modal', function (event) {
+            const button = event.relatedTarget;
+            const tareaId = button.getAttribute('data-tarea-id');
+            const tareaDesc = button.getAttribute('data-tarea-desc');
+            
+            document.getElementById('tareaDescripcion').textContent = tareaDesc;
+            document.getElementById('completarForm').action = `/completar-tarea/${tareaId}`;
+        });
+    </script>
+</body>
+</html>

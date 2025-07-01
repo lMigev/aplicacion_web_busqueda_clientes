@@ -1,0 +1,775 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <title>Panel CRM Avanzado</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.min.css">
+    <style>
+        body { 
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        .crm-header {
+            background: linear-gradient(135deg, #1e40af 0%, #3b82f6 50%, #60a5fa 100%);
+            color: #fff; 
+            padding: 1.5rem 0; 
+            border-radius: 0 0 2rem 2rem;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.12);
+            margin-bottom: 2rem;
+        }
+        
+        .dashboard-cards {
+            margin-bottom: 2rem;
+        }
+        
+        .metric-card {
+            background: rgba(255,255,255,0.95);
+            border-radius: 1rem;
+            padding: 1.5rem;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255,255,255,0.2);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        
+        .metric-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 40px rgba(0,0,0,0.15);
+        }
+        
+        .metric-value {
+            font-size: 2.2rem;
+            font-weight: 700;
+            color: #1e293b;
+        }
+        
+        .metric-label {
+            color: #64748b;
+            font-size: 0.9rem;
+            margin-top: 0.5rem;
+        }
+        
+        .metric-icon {
+            font-size: 2rem;
+            opacity: 0.8;
+        }
+        
+        .kanban-container {
+            background: rgba(255,255,255,0.95);
+            border-radius: 1.5rem;
+            padding: 1.5rem;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.1);
+            backdrop-filter: blur(10px);
+        }
+        
+        .kanban-col { 
+            min-width: 320px; 
+            background: #f8fafc; 
+            border-radius: 1rem; 
+            padding: 1rem; 
+            margin: 0 0.5rem;
+            border: 1px solid rgba(0,0,0,0.08);
+        }
+        
+        .kanban-header { 
+            font-weight: 700; 
+            font-size: 1.1rem; 
+            margin-bottom: 1rem; 
+            color: #1e293b;
+            text-align: center;
+            padding: 0.75rem;
+            background: linear-gradient(135deg, #e2e8f0 0%, #cbd5e1 100%);
+            border-radius: 0.5rem;
+            position: relative;
+        }
+        
+        .kanban-count {
+            position: absolute;
+            top: -8px;
+            right: -8px;
+            background: #3b82f6;
+            color: white;
+            border-radius: 50%;
+            width: 24px;
+            height: 24px;
+            font-size: 0.8rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .kanban-card { 
+            background: #fff; 
+            border-radius: 0.75rem; 
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08); 
+            margin-bottom: 0.75rem; 
+            padding: 1rem; 
+            border: 1px solid rgba(0,0,0,0.05);
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            position: relative;
+        }
+        
+        .kanban-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.12);
+        }
+        
+        .priority-indicator {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 4px;
+            height: 100%;
+            border-radius: 0.75rem 0 0 0.75rem;
+        }
+        
+        .priority-alta { background: #ef4444; }
+        .priority-media { background: #f59e0b; }
+        .priority-baja { background: #10b981; }
+        
+        .contact-name {
+            font-weight: 700;
+            font-size: 1rem;
+            color: #1e293b;
+            margin-bottom: 0.5rem;
+            padding-left: 12px;
+        }
+        
+        .contact-info {
+            display: flex;
+            flex-direction: column;
+            gap: 0.25rem;
+            margin-bottom: 0.75rem;
+            padding-left: 12px;
+        }
+        
+        .contact-detail {
+            display: flex;
+            align-items: center;
+            font-size: 0.85rem;
+            color: #64748b;
+        }
+        
+        .contact-detail i {
+            width: 16px;
+            margin-right: 0.5rem;
+            color: #94a3b8;
+        }
+        
+        .valor-estimado {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            color: white;
+            padding: 0.25rem 0.75rem;
+            border-radius: 1rem;
+            font-size: 0.8rem;
+            font-weight: 600;
+            display: inline-block;
+            margin: 0.5rem 0 0.5rem 12px;
+        }
+        
+        .probabilidad-badge {
+            background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+            color: white;
+            padding: 0.25rem 0.75rem;
+            border-radius: 1rem;
+            font-size: 0.8rem;
+            font-weight: 600;
+            margin-left: 0.5rem;
+        }
+        
+        .last-contact {
+            font-size: 0.8rem;
+            color: #94a3b8;
+            margin-bottom: 0.75rem;
+            padding: 0.25rem 0.5rem 0.25rem 12px;
+            background: #f1f5f9;
+            border-radius: 0.25rem;
+        }
+        
+        .task-summary {
+            font-size: 0.8rem;
+            color: #64748b;
+            margin-bottom: 0.75rem;
+            padding-left: 12px;
+        }
+        
+        .task-pending {
+            color: #dc2626;
+            font-weight: 600;
+        }
+        
+        .task-completed {
+            color: #16a34a;
+        }
+        
+        .form-select-sm, .form-control {
+            font-size: 0.85rem;
+            padding: 0.375rem 0.5rem;
+        }
+        
+        .btn-sm {
+            font-size: 0.8rem;
+            padding: 0.25rem 0.75rem;
+        }
+        
+        .accordion-section {
+            margin-bottom: 0.5rem;
+            padding-left: 12px;
+        }
+        
+        .accordion-header {
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: #374151;
+            cursor: pointer;
+            padding: 0.5rem;
+            border-bottom: 1px solid #e5e7eb;
+            border-radius: 0.25rem;
+            background: #f9fafb;
+            transition: background 0.2s ease;
+        }
+        
+        .accordion-header:hover {
+            background: #f3f4f6;
+        }
+        
+        .accordion-content {
+            margin-top: 0.5rem;
+            padding: 0.5rem;
+            background: #fafafa;
+            border-radius: 0.25rem;
+        }
+        
+        .back-btn {
+            background: linear-gradient(135deg, #6b7280 0%, #9ca3af 100%);
+            border: none;
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 0.5rem;
+            text-decoration: none;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+        
+        .back-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(107, 114, 128, 0.3);
+            color: white;
+            text-decoration: none;
+        }
+        
+        .nav-tabs-custom {
+            border-bottom: 2px solid #e5e7eb;
+            margin-bottom: 1.5rem;
+        }
+        
+        .nav-tabs-custom .nav-link {
+            border: none;
+            color: #6b7280;
+            font-weight: 600;
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.5rem 0.5rem 0 0;
+            margin-right: 0.25rem;
+        }
+        
+        .nav-tabs-custom .nav-link.active {
+            background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+            color: white;
+        }
+        
+        .chart-container {
+            background: white;
+            border-radius: 1rem;
+            padding: 1.5rem;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+            margin-bottom: 1.5rem;
+        }
+        
+        .floating-add-btn {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            color: white;
+            border: none;
+            font-size: 1.5rem;
+            box-shadow: 0 8px 25px rgba(16, 185, 129, 0.4);
+            transition: all 0.3s ease;
+            z-index: 1000;
+        }
+        
+        .floating-add-btn:hover {
+            transform: scale(1.1);
+            box-shadow: 0 12px 35px rgba(16, 185, 129, 0.6);
+        }
+        
+        @media (max-width: 768px) {
+            .kanban-col {
+                min-width: 280px;
+            }
+            
+            .metric-card {
+                padding: 1rem;
+                margin-bottom: 1rem;
+            }
+            
+            .metric-value {
+                font-size: 1.8rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="crm-header text-center">
+        <div class="container">
+            <div class="d-flex justify-content-between align-items-center">
+                <a href="/" class="back-btn">
+                    <i class="fas fa-arrow-left me-2"></i>Volver al Menú
+                </a>
+                <h1><i class="fas fa-chart-line me-2"></i>Panel CRM Avanzado</h1>
+                <a href="{{ url_for('crm_bp.dashboard') }}" class="btn btn-outline-light">
+                    <i class="fas fa-chart-bar me-2"></i>Dashboard
+                </a>
+            </div>
+        </div>
+    </div>
+    
+    <div class="container-fluid">
+        <!-- Dashboard de Métricas -->
+        <div class="dashboard-cards">
+            <div class="row g-3">
+                <div class="col-lg-3 col-md-6">
+                    <div class="metric-card text-center">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <div>
+                                <div class="metric-value text-primary">{{ total_oportunidades }}</div>
+                                <div class="metric-label">Total Oportunidades</div>
+                            </div>
+                            <i class="fas fa-bullseye metric-icon text-primary"></i>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-3 col-md-6">
+                    <div class="metric-card text-center">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <div>
+                                <div class="metric-value text-success">{{ oportunidades_activas }}</div>
+                                <div class="metric-label">Activas</div>
+                            </div>
+                            <i class="fas fa-play-circle metric-icon text-success"></i>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-3 col-md-6">
+                    <div class="metric-card text-center">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <div>
+                                <div class="metric-value text-warning">${{ "{:,.0f}".format(valor_total) }}</div>
+                                <div class="metric-label">Valor Estimado</div>
+                            </div>
+                            <i class="fas fa-dollar-sign metric-icon text-warning"></i>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-3 col-md-6">
+                    <div class="metric-card text-center">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <div>
+                                <div class="metric-value text-info">{{ tareas_pendientes }}</div>
+                                <div class="metric-label">Tareas Pendientes</div>
+                            </div>
+                            <i class="fas fa-tasks metric-icon text-info"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Tablero Kanban -->
+        <div class="kanban-container">
+            <div class="d-flex flex-row flex-nowrap overflow-auto pb-3">
+                {% for estado in estados %}
+                <div class="kanban-col flex-shrink-0">
+                    <div class="kanban-header">
+                        {{ estado }}
+                        <span class="kanban-count">{{ oportunidades[estado]|length }}</span>
+                    </div>
+                    {% for opp in oportunidades[estado] %}
+                    <div class="kanban-card">
+                        <div class="priority-indicator priority-{{ opp.prioridad|lower }}"></div>
+                        
+                        <div class="contact-name">{{ opp.contact.name|clean_text }}</div>
+                        
+                        <div class="contact-info">
+                            {% if opp.contact.email %}
+                            <div class="contact-detail">
+                                <i class="fas fa-envelope"></i>
+                                <a href="mailto:{{ opp.contact.email }}">{{ opp.contact.email }}</a>
+                            </div>
+                            {% endif %}
+                            {% if opp.contact.phone %}
+                            <div class="contact-detail">
+                                <i class="fas fa-phone"></i>
+                                <a href="tel:{{ opp.contact.phone }}">{{ opp.contact.phone }}</a>
+                            </div>
+                            {% endif %}
+                            {% if opp.contact.location %}
+                            <div class="contact-detail">
+                                <i class="fas fa-map-marker-alt"></i>
+                                <span>{{ opp.contact.location }}</span>
+                            </div>
+                            {% endif %}
+                        </div>
+                        
+                        {% if opp.valor_estimado and opp.valor_estimado > 0 %}
+                        <div class="valor-estimado">
+                            💰 ${{ "{:,.0f}".format(opp.valor_estimado) }}
+                            <span class="probabilidad-badge">{{ opp.probabilidad }}%</span>
+                        </div>
+                        {% endif %}
+                        
+                        <div class="last-contact">
+                            <i class="fas fa-clock me-1"></i>
+                            Última actividad: {{ opp.ultima_actividad.strftime('%d/%m/%Y %H:%M') if opp.ultima_actividad else 'Sin actividad' }}
+                        </div>
+                        
+                        {% if opp.tareas %}
+                        <div class="task-summary">
+                            {% set tareas_pendientes = opp.tareas|selectattr('completada', 'equalto', false)|list|length %}
+                            {% set tareas_completadas = opp.tareas|selectattr('completada', 'equalto', true)|list|length %}
+                            <i class="fas fa-tasks me-1"></i>
+                            <span class="task-pending">{{ tareas_pendientes }} pendientes</span>
+                            <span class="task-completed">• {{ tareas_completadas }} completadas</span>
+                        </div>
+                        {% endif %}
+                        
+                        <div class="accordion-section">
+                            <div class="accordion-header" onclick="toggleAccordion(this)">
+                                <i class="fas fa-cog me-1"></i>Gestión Rápida
+                                <i class="fas fa-chevron-down float-end"></i>
+                            </div>
+                            <div class="accordion-content" style="display: none;">
+                                <!-- Cambio de estado -->
+                                <form method="post" action="{{ url_for('crm_bp.cambiar_estado', opp_id=opp.id) }}" class="mb-2">
+                                    <select name="estado" class="form-select form-select-sm" onchange="this.form.submit()">
+                                        {% for est in estados %}
+                                            <option value="{{ est }}" {% if est == opp.estado %}selected{% endif %}>{{ est }}</option>
+                                        {% endfor %}
+                                    </select>
+                                </form>
+                                
+                                <!-- Agregar nota -->
+                                <form method="post" action="{{ url_for('crm_bp.agregar_nota', opp_id=opp.id) }}" class="mb-2">
+                                    <textarea name="nota" class="form-control mb-2" rows="2" placeholder="Agregar nota...">{{ opp.nota or '' }}</textarea>
+                                    <button class="btn btn-primary btn-sm w-100 mb-2">
+                                        <i class="fas fa-save me-1"></i>Guardar Nota
+                                    </button>
+                                </form>
+                                
+                                <!-- Agregar tarea -->
+                                <form method="post" action="{{ url_for('crm_bp.agregar_tarea', opp_id=opp.id) }}">
+                                    <input name="descripcion" class="form-control mb-2" placeholder="Nueva tarea..." required>
+                                    <div class="row g-1 mb-2">
+                                        <div class="col-6">
+                                            <select name="prioridad" class="form-select form-select-sm">
+                                                <option value="Media">Media</option>
+                                                <option value="Alta">Alta</option>
+                                                <option value="Baja">Baja</option>
+                                            </select>
+                                        </div>
+                                        <div class="col-6">
+                                            <input type="date" name="fecha_vencimiento" class="form-control form-control-sm">
+                                        </div>
+                                    </div>
+                                    <button class="btn btn-secondary btn-sm w-100">
+                                        <i class="fas fa-plus me-1"></i>Agregar Tarea
+                                    </button>
+                                </form>
+                                
+                                <div class="mt-2">
+                                    <a href="{{ url_for('crm_bp.detalle_oportunidad', opp_id=opp.id) }}" 
+                                       class="btn btn-outline-info btn-sm w-100">
+                                        <i class="fas fa-eye me-1"></i>Ver Detalle
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Lista de tareas con estado -->
+                        {% if opp.tareas %}
+                        <div class="accordion-section">
+                            <div class="accordion-header" onclick="toggleAccordion(this)">
+                                <i class="fas fa-list me-1"></i>Tareas ({{ opp.tareas|length }})
+                                <i class="fas fa-chevron-down float-end"></i>
+                            </div>
+                            <div class="accordion-content" style="display: none; max-height: 150px; overflow-y: auto;">
+                                {% for tarea in opp.tareas|sort(attribute='fecha_vencimiento') %}
+                                <div class="d-flex justify-content-between align-items-center mb-2 p-2 
+                                           {% if tarea.completada %}bg-success bg-opacity-10{% elif tarea.fecha_vencimiento and tarea.fecha_vencimiento|is_overdue %}bg-danger bg-opacity-10{% endif %} 
+                                           rounded">
+                                    <div class="flex-grow-1">
+                                        <div class="fw-bold">{{ tarea.descripcion }}</div>
+                                        {% if tarea.fecha_vencimiento %}
+                                        <small class="text-muted">
+                                            Vence: {{ tarea.fecha_vencimiento.strftime('%d/%m/%Y') }}
+                                        </small>
+                                        {% endif %}
+                                    </div>                                    {% if not tarea.completada %}
+                                    <button type="button" class="btn btn-sm btn-outline-success" 
+                                            data-bs-toggle="modal" 
+                                            data-bs-target="#completarTareaModal"
+                                            data-tarea-id="{{ tarea.id }}"
+                                            data-tarea-desc="{{ tarea.descripcion }}"
+                                            title="Marcar como completada">
+                                        <i class="far fa-circle"></i>
+                                    </button>
+                                    {% else %}
+                                    <span class="badge bg-success">
+                                        <i class="fas fa-check"></i>
+                                    </span>
+                                    {% endif %}
+                                </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                        {% endif %}
+                    </div>
+                    {% endfor %}
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Botón flotante para nueva oportunidad -->
+    <button class="floating-add-btn" data-bs-toggle="modal" data-bs-target="#nuevaOportunidadModal">
+        <i class="fas fa-plus"></i>
+    </button>
+
+    <!-- Modal para nueva oportunidad -->
+    <div class="modal fade" id="nuevaOportunidadModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Nueva Oportunidad</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="nuevaOportunidadForm">
+                        <div class="mb-3">
+                            <label class="form-label">Cliente</label>
+                            <select class="form-select" name="contact_id" required>
+                                <option value="">Seleccionar cliente...</option>
+                                <!-- Se llenarán dinámicamente -->
+                            </select>
+                        </div>
+                        <div class="row g-3">
+                            <div class="col-6">
+                                <label class="form-label">Valor Estimado</label>
+                                <input type="number" class="form-control" name="valor_estimado" step="0.01">
+                            </div>
+                            <div class="col-6">
+                                <label class="form-label">Probabilidad (%)</label>
+                                <input type="number" class="form-control" name="probabilidad" min="0" max="100" value="25">
+                            </div>
+                        </div>
+                        <div class="row g-3 mt-1">
+                            <div class="col-6">
+                                <label class="form-label">Prioridad</label>
+                                <select class="form-select" name="prioridad">
+                                    <option value="Media">Media</option>
+                                    <option value="Alta">Alta</option>
+                                    <option value="Baja">Baja</option>
+                                </select>
+                            </div>
+                            <div class="col-6">
+                                <label class="form-label">Fecha Cierre Estimada</label>
+                                <input type="date" class="form-control" name="fecha_cierre_estimada">
+                            </div>
+                        </div>
+                        <div class="mt-3">
+                            <label class="form-label">Nota Inicial</label>
+                            <textarea class="form-control" name="nota" rows="3"></textarea>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="button" class="btn btn-primary" onclick="crearOportunidad()">Crear Oportunidad</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal para completar tarea con comentario -->
+    <div class="modal fade" id="completarTareaModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">
+                        <i class="fas fa-check-circle me-2"></i>Completar Tarea
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>                <form id="completarTareaForm" method="post">
+                    <input type="hidden" name="redirect_to" value="{{ request.url }}">
+                    <div class="modal-body">
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Tarea:</label>
+                            <p id="tareaDescripcion" class="text-muted"></p>
+                        </div>
+                        <div class="mb-3">
+                            <label for="resultadoTarea" class="form-label">Comentarios sobre la tarea completada:</label>
+                            <textarea class="form-control" id="resultadoTarea" name="resultado" rows="4" 
+                                      placeholder="Describe el resultado, detalles importantes, próximos pasos, etc."></textarea>
+                            <div class="form-text">
+                                <i class="fas fa-info-circle me-1"></i>
+                                Este comentario será visible en el historial de la oportunidad
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                            <i class="fas fa-times me-1"></i>Cancelar
+                        </button>
+                        <button type="submit" class="btn btn-success">
+                            <i class="fas fa-check me-1"></i>Completar Tarea
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/moment@2.29.4/moment.min.js"></script>
+    <script>
+        function toggleAccordion(element) {
+            const content = element.nextElementSibling;
+            const isVisible = content.style.display !== 'none';
+            const icon = element.querySelector('.fa-chevron-down, .fa-chevron-up');
+            
+            content.style.display = isVisible ? 'none' : 'block';
+            
+            if (icon) {
+                if (isVisible) {
+                    icon.className = icon.className.replace('fa-chevron-up', 'fa-chevron-down');
+                } else {
+                    icon.className = icon.className.replace('fa-chevron-down', 'fa-chevron-up');
+                }
+            }
+        }
+
+        function crearOportunidad() {
+            const form = document.getElementById('nuevaOportunidadForm');
+            const formData = new FormData(form);
+            
+            fetch('/api/crm/crear-oportunidad', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    location.reload();
+                } else {
+                    alert('Error al crear oportunidad: ' + data.message);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Error al crear oportunidad');
+            });
+        }
+
+        // Auto-refresh cada 5 minutos
+        setInterval(() => {
+            location.reload();
+        }, 300000);
+
+        // Cargar clientes para el modal
+        document.addEventListener('DOMContentLoaded', function() {
+            fetch('/api/clientes?min_quality=50')
+                .then(response => response.json())
+                .then(data => {
+                    const select = document.querySelector('select[name="contact_id"]');
+                    data.forEach(cliente => {
+                        const option = document.createElement('option');
+                        option.value = cliente.id;
+                        option.textContent = `${cliente.name} - ${cliente.email || 'Sin email'}`;
+                        select.appendChild(option);
+                    });
+                });
+        });
+
+        // Notificaciones en tiempo real (simuladas)
+        function checkNotifications() {
+            // Aquí se podrían implementar notificaciones push
+            console.log('Checking for notifications...');
+        }
+
+        setInterval(checkNotifications, 60000); // Cada minuto
+
+        // Completar tarea
+        document.getElementById('completarTareaForm').addEventListener('submit', function(event) {
+            event.preventDefault();
+            
+            const formData = new FormData(this);
+            const tareaId = this.querySelector('input[name="tarea_id"]').value;
+            
+            fetch('/api/crm/completar-tarea/' + tareaId, {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    location.reload();
+                } else {
+                    alert('Error al completar tarea: ' + data.message);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Error al completar tarea');
+            });
+        });
+
+        // Abrir modal de completar tarea
+        document.addEventListener('click', function(event) {
+            if (event.target.matches('[data-bs-target="#completarTareaModal"]')) {
+                const tareaId = event.target.getAttribute('data-tarea-id');
+                const tareaDesc = event.target.getAttribute('data-tarea-desc');
+                
+                const modal = new bootstrap.Modal(document.getElementById('completarTareaModal'));
+                document.getElementById('tareaDescripcion').textContent = tareaDesc;
+                document.querySelector('input[name="tarea_id"]').value = tareaId;
+                
+                modal.show();
+            }
+        });
+
+        // Manejar modal de completar tarea
+        const completarTareaModal = document.getElementById('completarTareaModal');
+        if (completarTareaModal) {
+            completarTareaModal.addEventListener('show.bs.modal', function (event) {
+                const button = event.relatedTarget;
+                const tareaId = button.getAttribute('data-tarea-id');
+                const tareaDesc = button.getAttribute('data-tarea-desc');
+                
+                // Actualizar contenido del modal
+                document.getElementById('tareaDescripcion').textContent = tareaDesc;
+                
+                // Configurar acción del formulario
+                const form = document.getElementById('completarTareaForm');
+                form.action = `/completar-tarea/${tareaId}`;
+            });
+        }
+    </script>
+</body>
+</html>

@@ -207,6 +207,21 @@
                     </label>
                     <input type="text" class="form-control form-control-lg" id="searchCriteria" placeholder="Ej: Laboratorios Clínicos en Panamá" required>
                 </div>
+                <!-- Acordeón para Sugerencias de Búsqueda Inteligente -->
+                <div class="accordion mb-4" id="accordionSugerencias">
+                    <div class="accordion-item">
+                        <h2 class="accordion-header" id="headingSugerencias">
+                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseSugerencias" aria-expanded="false" aria-controls="collapseSugerencias">
+                                <i class="fa-solid fa-magic me-2 text-warning"></i> Sugerencias de Búsqueda Inteligente
+                            </button>
+                        </h2>
+                        <div id="collapseSugerencias" class="accordion-collapse collapse" aria-labelledby="headingSugerencias" data-bs-parent="#accordionSugerencias">
+                            <div class="accordion-body">
+                                <div id="sugerenciasContent" class="text-center text-muted">Cargando sugerencias...</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
                 <button type="submit" class="btn btn-primary btn-lg w-100 mb-4">
                     <i class="fa-solid fa-search me-2"></i>Buscar Contactos
                 </button>
@@ -223,6 +238,7 @@
         </div>
         <div id="results" class="mt-5"></div>
     </div>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
     <script>
         document.getElementById('searchForm').addEventListener('submit', function(event) {
             event.preventDefault();
@@ -266,6 +282,34 @@
                 .catch(error => {
                     document.getElementById('loadingSpinner').style.display = 'none';
                     console.error('Error:', error);
+                });
+        });
+        // Cargar sugerencias de búsqueda inteligente al abrir el acordeón
+        document.querySelector('#collapseSugerencias').addEventListener('show.bs.collapse', function () {
+            const sugerenciasDiv = document.getElementById('sugerenciasContent');
+            sugerenciasDiv.innerHTML = '<div class="d-flex flex-column align-items-center justify-content-center py-3">'
+                + '<div class="spinner-border text-warning mb-3" role="status"></div>'
+                + '<div class="fw-semibold text-warning">Analizando búsquedas inteligentes...</div>'
+                + '</div>';
+            fetch('/recomendaciones?json=1')
+                .then(response => response.json())
+                .then(data => {
+                    if (data.recomendaciones && data.recomendaciones.length > 0) {
+                        let html = '<ul class="list-group">';
+                        data.recomendaciones.forEach(rec => {
+                            html += `<li class="list-group-item d-flex justify-content-between align-items-center">
+                                <span>${rec.criterio}</span>
+                                <span class="badge bg-light text-dark">${rec.motivo || 'Sugerido por IA'}</span>
+                            </li>`;
+                        });
+                        html += '</ul>';
+                        sugerenciasDiv.innerHTML = html;
+                    } else {
+                        sugerenciasDiv.innerHTML = '<div class="text-muted">No hay sugerencias disponibles en este momento.</div>';
+                    }
+                })
+                .catch(() => {
+                    sugerenciasDiv.innerHTML = '<div class="text-danger">Error al cargar sugerencias.</div>';
                 });
         });
     </script>

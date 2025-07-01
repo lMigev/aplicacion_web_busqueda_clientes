@@ -6,26 +6,26 @@
     <title>Panel de Estadísticas</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <style>
-        body { 
+    <style>        body { 
             background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             margin: 0;
-            padding: 20px;
+            padding: 8px;
+            min-height: 100vh;
         }
         
         .stats-header {
             background: linear-gradient(135deg, #1e40af 0%, #3b82f6 50%, #60a5fa 100%);
             color: #fff;
-            padding: 2rem 1.5rem;
-            border-radius: 2rem 2rem 0 0;
+            padding: 1rem 1rem;
+            border-radius: 1.5rem 1.5rem 0 0;
             text-align: center;
             margin-bottom: 0;
             box-shadow: 0 4px 15px rgba(0,0,0,0.1);
         }
         
         .stats-header h2 {
-            font-size: 2.2rem;
+            font-size: 1.4rem;
             font-weight: 700;
             margin: 0;
             text-shadow: 0 2px 4px rgba(0,0,0,0.2);
@@ -33,41 +33,42 @@
         
         .stats-content {
             background: #fff;
-            border-radius: 0 0 2rem 2rem;
-            padding: 2rem 1.5rem;
+            border-radius: 0 0 1.5rem 1.5rem;
+            padding: 1.5rem 1rem;
             box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+            margin-bottom: 1.5rem;
         }
         
         .metric-card {
             background: linear-gradient(135deg, #fff 0%, #f8fafc 100%);
-            border-radius: 1.5rem;
-            padding: 2rem 1.5rem;
+            border-radius: 1rem;
+            padding: 1.5rem 1rem;
             text-align: center;
-            box-shadow: 0 8px 25px rgba(0,0,0,0.08);
+            box-shadow: 0 6px 20px rgba(0,0,0,0.08);
             border: 1px solid rgba(255,255,255,0.2);
             transition: all 0.3s ease;
             height: 100%;
         }
         
         .metric-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 15px 35px rgba(0,0,0,0.15);
+            transform: translateY(-3px);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.12);
         }
         
         .metric-icon {
-            font-size: 3rem;
+            font-size: 2.5rem;
             margin-bottom: 1rem;
             display: block;
         }
         
         .metric-value {
-            font-size: 3rem;
+            font-size: 2.5rem;
             font-weight: 700;
-            margin: 1rem 0 0.5rem 0;
+            margin: 0.5rem 0;
         }
         
         .metric-title {
-            font-size: 1.1rem;
+            font-size: 0.9rem;
             font-weight: 600;
             color: #64748b;
             text-transform: uppercase;
@@ -80,86 +81,87 @@
         
         .info-card .metric-value { color: #1e40af; }
         .success-card .metric-value { color: #047857; }
-        .warning-card .metric-value { color: #d97706; }
-          .chart-container {
+        .warning-card .metric-value { color: #d97706; }        .chart-container {
             background: #fff;
-            border-radius: 2rem;
-            padding: 2rem;
+            border-radius: 1.5rem;
+            padding: 2rem 1.5rem;
             box-shadow: 0 8px 25px rgba(0,0,0,0.08);
-            margin-top: 2rem;
+            margin-top: 0;
         }
         
         .chart-title {
-            font-size: 1.5rem;
+            font-size: 1.3rem;
             font-weight: 700;
             color: #1e40af;
             text-align: center;
-            margin-bottom: 2rem;
+            margin-bottom: 1.5rem;
         }
-          .chart-wrapper {
+        .chart-wrapper {
             position: relative;
-            height: 350px;
+            height: 300px;
             width: 100%;
-            max-height: 350px;
+            max-height: 300px;
             overflow: hidden;
         }
-        
         canvas {
             border-radius: 1rem;
-            max-height: 350px !important;
+            max-height: 300px !important;
             max-width: 100% !important;
         }
-        
         @media (max-width: 768px) {
-            .stats-header h2 { font-size: 1.8rem; }
-            .metric-card { padding: 1.5rem 1rem; }
-            .metric-icon { font-size: 2.5rem; }
-            .metric-value { font-size: 2.5rem; }
+            .stats-header h2 { font-size: 1.2rem; }
+            .metric-card { padding: 1rem 0.5rem; }
+            .metric-icon { font-size: 2rem; }
+            .metric-value { font-size: 2rem; }
+            .metric-title { font-size: 0.8rem; }
             .chart-wrapper {
-                height: 300px;
-                max-height: 300px;
+                height: 250px;
+                max-height: 250px;
             }
             canvas {
-                max-height: 300px !important;
+                max-height: 250px !important;
             }
-        }
-    </style>
+            .chart-container { padding: 1.5rem 1rem; }
+        }</style>
 </head>
 <body>
-<div class="container-fluid">
+<div class="container-fluid p-0 h-100">
     <div class="stats-header">
-        <h2><i class="fas fa-chart-line me-3"></i>Panel de Estadísticas</h2>
+        <h2><i class="fas fa-chart-line me-2"></i>Panel de Estadísticas</h2>
     </div>
-    <div class="stats-content">
-        <div class="row">
-            <div class="col-lg-4 col-md-6 mb-4">
+    <div class="stats-content">        <div class="row g-2">
+            <div class="col-lg-4 col-md-4 col-4">
                 <div class="metric-card info-card">
                     <i class="fas fa-users metric-icon"></i>
                     <div class="metric-title">Total de Contactos</div>
                     <div class="metric-value" id="totalContactos">-</div>
                 </div>
             </div>
-            <div class="col-lg-4 col-md-6 mb-4">
+            <div class="col-lg-4 col-md-4 col-4">
                 <div class="metric-card success-card">
                     <i class="fas fa-star metric-icon"></i>
                     <div class="metric-title">Calidad Promedio</div>
                     <div class="metric-value" id="calidadPromedio">-</div>
                 </div>
             </div>
-            <div class="col-lg-4 col-md-6 mb-4">
+            <div class="col-lg-4 col-md-4 col-4">
                 <div class="metric-card warning-card">
                     <i class="fas fa-search metric-icon"></i>
                     <div class="metric-title">Búsquedas Realizadas</div>
                     <div class="metric-value" id="totalBusquedas">-</div>
-                </div>
-            </div>
-        </div>        <div class="chart-container">
-            <div class="chart-title">
-                <i class="fas fa-chart-bar me-2"></i>Contactos por Mes
-            </div>
-            <div class="chart-wrapper">
-                <canvas id="graficoContactos"></canvas>
-            </div>
+                </div>            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Sección independiente para gráficos -->
+<div class="container-fluid p-0">
+    <div class="chart-container">
+        <div class="chart-title">
+            <i class="fas fa-chart-bar me-2"></i>Contactos por Mes
+        </div>
+        <div class="chart-wrapper">
+            <canvas id="graficoContactos"></canvas>
         </div>
     </div>
 </div>
@@ -170,13 +172,12 @@
         .then(data => {
             document.getElementById('totalContactos').textContent = data.total_contactos;
             document.getElementById('calidadPromedio').textContent = data.calidad_promedio + '%';
-            document.getElementById('totalBusquedas').textContent = data.total_busquedas;            // Gráfico de contactos por mes mejorado
-            const ctx = document.getElementById('graficoContactos').getContext('2d');
-            
-            // Configurar el canvas para altura fija
+            document.getElementById('totalBusquedas').textContent = data.total_busquedas;
+            // Gráfico de contactos por mes mejorado
+            const ctx = document.getElementById('graficoContactos').getContext('2d');            // Configurar el canvas para altura fija
             const canvas = document.getElementById('graficoContactos');
-            canvas.style.height = '350px';
-            canvas.style.maxHeight = '350px';
+            canvas.style.height = '300px';
+            canvas.style.maxHeight = '300px';
             canvas.style.width = '100%';
             canvas.style.maxWidth = '100%';
             

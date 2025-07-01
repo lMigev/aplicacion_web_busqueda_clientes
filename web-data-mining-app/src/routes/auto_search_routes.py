@@ -32,17 +32,48 @@ def generate_new_searches(keywords, n=10):
 def recomendaciones_page():
     recomendaciones = []
     resultados = []
+    
     # Obtener recomendaciones
-    keywords = get_top_keywords()
-    recs = generate_new_searches(keywords, n=10)
-    recomendaciones = [{'criterio': r, 'motivo': 'Basado en búsquedas exitosas'} for r in recs]
+    try:
+        keywords = get_top_keywords()
+        recs = generate_new_searches(keywords, n=10)
+        recomendaciones = [{'criterio': r, 'motivo': 'Basado en búsquedas exitosas'} for r in recs]
+    except Exception as e:
+        print(f"Error generando recomendaciones: {e}")
+        recomendaciones = []
+
+    # Si la petición es AJAX o tiene ?json=1, devolver JSON
+    if request.args.get('json') == '1' or request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+        return jsonify({'recomendaciones': recomendaciones})
 
     if request.method == 'POST':
         seleccionadas = request.form.getlist('seleccionadas')
-        dms = DataMiningService()
-        for criterio in seleccionadas:
-            dms.search_contacts(criterio)
-            resultados.append(f"Búsqueda '{criterio}' ejecutada correctamente.")
+        if seleccionadas:
+            print(f"Ejecutando búsquedas para: {seleccionadas}")
+            dms = DataMiningService()
+            
+            # Limitar a máximo 3 búsquedas por vez para evitar sobrecarga
+            seleccionadas = seleccionadas[:3]
+            
+            for i, criterio in enumerate(seleccionadas):
+                try:
+                    print(f"Procesando búsqueda {i+1}/{len(seleccionadas)}: {criterio}")
+                    
+                    # Ejecutar búsqueda con límite reducido para evitar timeout
+                    contacts = dms.search_contacts_limited(criterio, max_results=5)
+                    
+                    if contacts:
+                        resultados.append(f"✅ Búsqueda '{criterio}': {len(contacts)} contactos encontrados")
+                    else:
+                        resultados.append(f"⚠️ Búsqueda '{criterio}': Sin resultados")
+                        
+                except Exception as e:
+                    print(f"Error en búsqueda '{criterio}': {e}")
+                    resultados.append(f"❌ Error en búsqueda '{criterio}': {str(e)}")
+                    continue
+        else:
+            resultados.append("❌ No se seleccionaron criterios de búsqueda")
+    
     return render_template('recomendaciones.html', recomendaciones=recomendaciones, resultados=resultados)
 
 @auto_search_bp.route('/api/recomendaciones', methods=['GET'])

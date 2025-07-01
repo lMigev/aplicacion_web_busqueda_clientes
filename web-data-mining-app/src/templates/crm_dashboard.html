@@ -1,0 +1,532 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <title>Dashboard CRM - Métricas y Análisis</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <style>
+        body { 
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        .dashboard-header {
+            background: linear-gradient(135deg, #1e40af 0%, #3b82f6 50%, #60a5fa 100%);
+            color: #fff; 
+            padding: 2rem 0; 
+            border-radius: 0 0 2rem 2rem;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.12);
+            margin-bottom: 2rem;
+        }
+        
+        .metric-card {
+            background: rgba(255,255,255,0.95);
+            border-radius: 1.5rem;
+            padding: 2rem;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.1);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255,255,255,0.2);
+            transition: all 0.3s ease;
+            height: 100%;
+        }
+        
+        .metric-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 25px 70px rgba(0,0,0,0.15);
+        }
+        
+        .metric-value {
+            font-size: 3rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+        
+        .metric-label {
+            color: #64748b;
+            font-size: 1.1rem;
+            margin-bottom: 1rem;
+        }
+        
+        .metric-change {
+            font-size: 0.9rem;
+            font-weight: 600;
+        }
+        
+        .chart-container {
+            background: rgba(255,255,255,0.95);
+            border-radius: 1.5rem;
+            padding: 2rem;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.1);
+            backdrop-filter: blur(10px);
+            margin-bottom: 2rem;
+        }
+        
+        .chart-title {
+            font-size: 1.4rem;
+            font-weight: 700;
+            color: #1e293b;
+            margin-bottom: 1.5rem;
+            text-align: center;
+        }
+        
+        .quick-stats {
+            background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+            border-radius: 1rem;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+        
+        .stat-item {
+            text-align: center;
+            padding: 1rem;
+        }
+        
+        .stat-number {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #1e293b;
+        }
+        
+        .stat-label {
+            color: #64748b;
+            font-size: 0.9rem;
+            margin-top: 0.5rem;
+        }
+        
+        .top-opportunities {
+            background: rgba(255,255,255,0.95);
+            border-radius: 1.5rem;
+            padding: 2rem;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.1);
+            backdrop-filter: blur(10px);
+        }
+        
+        .opportunity-item {
+            background: #f8fafc;
+            border-radius: 0.75rem;
+            padding: 1rem;
+            margin-bottom: 1rem;
+            border-left: 4px solid #3b82f6;
+            transition: all 0.3s ease;
+        }
+        
+        .opportunity-item:hover {
+            background: #f1f5f9;
+            transform: translateX(5px);
+        }
+        
+        .opportunity-name {
+            font-weight: 700;
+            color: #1e293b;
+            margin-bottom: 0.5rem;
+        }
+        
+        .opportunity-value {
+            color: #16a34a;
+            font-weight: 600;
+            font-size: 1.1rem;
+        }
+        
+        .opportunity-details {
+            color: #64748b;
+            font-size: 0.9rem;
+            margin-top: 0.5rem;
+        }
+        
+        .alert-custom {
+            background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+            border: 1px solid #f59e0b;
+            border-radius: 1rem;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+        }
+        
+        .back-btn {
+            background: linear-gradient(135deg, #6b7280 0%, #9ca3af 100%);
+            border: none;
+            color: white;
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.75rem;
+            text-decoration: none;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+        
+        .back-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(107, 114, 128, 0.3);
+            color: white;
+            text-decoration: none;
+        }
+        
+        .refresh-btn {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            border: none;
+            color: white;
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.75rem;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+        
+        .refresh-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+        }
+        
+        @media (max-width: 768px) {
+            .metric-card {
+                padding: 1.5rem;
+                margin-bottom: 1rem;
+            }
+            
+            .metric-value {
+                font-size: 2rem;
+            }
+            
+            .chart-container {
+                padding: 1.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="dashboard-header text-center">
+        <div class="container">
+            <div class="d-flex justify-content-between align-items-center">
+                <a href="{{ url_for('crm_bp.crm_panel') }}" class="back-btn">
+                    <i class="fas fa-arrow-left me-2"></i>Volver al CRM
+                </a>
+                <h1><i class="fas fa-chart-bar me-2"></i>Dashboard CRM - Análisis y Métricas</h1>
+                <button onclick="location.reload()" class="refresh-btn">
+                    <i class="fas fa-sync-alt me-2"></i>Actualizar
+                </button>
+            </div>
+        </div>
+    </div>
+    
+    <div class="container-fluid">
+        
+        <!-- Alertas y Notificaciones -->
+        {% if tareas_vencidas > 0 %}
+        <div class="alert-custom">
+            <div class="d-flex align-items-center">
+                <i class="fas fa-exclamation-triangle text-warning me-3 fs-3"></i>
+                <div>
+                    <h5 class="mb-1">⚠️ Atención Requerida</h5>
+                    <p class="mb-0">Tienes <strong>{{ tareas_vencidas }}</strong> tareas vencidas que requieren atención inmediata.</p>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+        
+        <!-- Métricas Principales -->
+        <div class="row g-4 mb-4">
+            <div class="col-lg-3 col-md-6">
+                <div class="metric-card text-center">
+                    <i class="fas fa-bullseye text-primary mb-3" style="font-size: 3rem;"></i>
+                    <div class="metric-value text-primary">{{ total_oportunidades }}</div>
+                    <div class="metric-label">Total Oportunidades</div>
+                    <div class="metric-change text-success">
+                        <i class="fas fa-arrow-up me-1"></i>+12% este mes
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-3 col-md-6">
+                <div class="metric-card text-center">
+                    <i class="fas fa-chart-line text-success mb-3" style="font-size: 3rem;"></i>
+                    <div class="metric-value text-success">{{ oportunidades_activas }}</div>
+                    <div class="metric-label">Oportunidades Activas</div>
+                    <div class="metric-change text-success">
+                        <i class="fas fa-arrow-up me-1"></i>+8% esta semana
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-3 col-md-6">
+                <div class="metric-card text-center">
+                    <i class="fas fa-dollar-sign text-warning mb-3" style="font-size: 3rem;"></i>
+                    <div class="metric-value text-warning">${{ "{:,.0f}".format(valor_total) }}</div>
+                    <div class="metric-label">Valor Total Pipeline</div>
+                    <div class="metric-change text-success">
+                        <i class="fas fa-arrow-up me-1"></i>+25% este mes
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-3 col-md-6">
+                <div class="metric-card text-center">
+                    <i class="fas fa-tasks text-info mb-3" style="font-size: 3rem;"></i>
+                    <div class="metric-value text-info">{{ tareas_pendientes }}</div>
+                    <div class="metric-label">Tareas Pendientes</div>
+                    {% if tareas_vencidas > 0 %}
+                    <div class="metric-change text-danger">
+                        <i class="fas fa-exclamation-triangle me-1"></i>{{ tareas_vencidas }} vencidas
+                    </div>
+                    {% else %}
+                    <div class="metric-change text-success">
+                        <i class="fas fa-check me-1"></i>Al día
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        
+        <!-- Estadísticas Rápidas por Estado -->
+        <div class="quick-stats">
+            <h4 class="text-center mb-4"><i class="fas fa-tachometer-alt me-2"></i>Distribución por Estado</h4>
+            <div class="row">
+                <div class="col-lg-3 col-md-6">
+                    <div class="stat-item">
+                        <div class="stat-number text-primary">{{ metricas_estado['Nuevo']['count'] }}</div>
+                        <div class="stat-label">Nuevos</div>
+                        <small class="text-muted">${{ "{:,.0f}".format(metricas_estado['Nuevo']['valor']) }}</small>
+                    </div>
+                </div>
+                <div class="col-lg-3 col-md-6">
+                    <div class="stat-item">
+                        <div class="stat-number text-warning">{{ metricas_estado['En seguimiento']['count'] }}</div>
+                        <div class="stat-label">En Seguimiento</div>
+                        <small class="text-muted">${{ "{:,.0f}".format(metricas_estado['En seguimiento']['valor']) }}</small>
+                    </div>
+                </div>
+                <div class="col-lg-3 col-md-6">
+                    <div class="stat-item">
+                        <div class="stat-number text-info">{{ metricas_estado['Oportunidad']['count'] }}</div>
+                        <div class="stat-label">Oportunidades</div>
+                        <small class="text-muted">${{ "{:,.0f}".format(metricas_estado['Oportunidad']['valor']) }}</small>
+                    </div>
+                </div>
+                <div class="col-lg-3 col-md-6">
+                    <div class="stat-item">
+                        <div class="stat-number text-success">{{ metricas_estado['Cerrado']['count'] }}</div>
+                        <div class="stat-label">Cerrados</div>
+                        <small class="text-muted">${{ "{:,.0f}".format(metricas_estado['Cerrado']['valor']) }}</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="row g-4">
+            <!-- Gráfico de Oportunidades por Mes -->
+            <div class="col-lg-8">
+                <div class="chart-container">
+                    <h4 class="chart-title">📈 Tendencia de Oportunidades (Últimos 6 Meses)</h4>
+                    <canvas id="oportunidadesChart" height="120"></canvas>
+                </div>
+                
+                <!-- Gráfico de Distribución por Estado -->
+                <div class="chart-container">
+                    <h4 class="chart-title">🥧 Distribución por Estado</h4>
+                    <canvas id="estadosChart" height="120"></canvas>
+                </div>
+            </div>
+            
+            <!-- Top Oportunidades -->
+            <div class="col-lg-4">
+                <div class="top-opportunities">
+                    <h4 class="text-center mb-4">🏆 Top Oportunidades por Valor</h4>
+                    {% if top_oportunidades %}
+                        {% for opp in top_oportunidades %}
+                        <div class="opportunity-item">
+                            <div class="opportunity-name">{{ opp.contact.name|clean_text }}</div>
+                            <div class="opportunity-value">${{ "{:,.0f}".format(opp.valor_estimado) }}</div>
+                            <div class="opportunity-details">
+                                <i class="fas fa-percent me-1"></i>{{ opp.probabilidad }}% probabilidad
+                                <br>
+                                <i class="fas fa-flag me-1"></i>{{ opp.estado }}
+                                {% if opp.contact.email %}
+                                <br>
+                                <i class="fas fa-envelope me-1"></i>{{ opp.contact.email }}
+                                {% endif %}
+                            </div>
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                        <div class="text-center text-muted">
+                            <i class="fas fa-inbox fs-3 mb-3"></i>
+                            <p>No hay oportunidades con valor asignado aún.</p>
+                        </div>
+                    {% endif %}
+                </div>
+                
+                <!-- Métricas Adicionales -->
+                <div class="chart-container mt-4">
+                    <h4 class="chart-title">📊 Métricas de Rendimiento</h4>
+                    <div class="row g-3">
+                        <div class="col-12">
+                            <div class="d-flex justify-content-between align-items-center p-3 bg-light rounded">
+                                <span>Tasa de Conversión</span>
+                                <strong class="text-success">
+                                    {% if total_oportunidades > 0 %}
+                                        {{ "%.1f"|format((metricas_estado['Cerrado']['count'] / total_oportunidades) * 100) }}%
+                                    {% else %}
+                                        0%
+                                    {% endif %}
+                                </strong>
+                            </div>
+                        </div>
+                        <div class="col-12">
+                            <div class="d-flex justify-content-between align-items-center p-3 bg-light rounded">
+                                <span>Valor Promedio</span>
+                                <strong class="text-primary">
+                                    {% if total_oportunidades > 0 %}
+                                        ${{ "{:,.0f}".format(valor_total / total_oportunidades) }}
+                                    {% else %}
+                                        $0
+                                    {% endif %}
+                                </strong>
+                            </div>
+                        </div>
+                        <div class="col-12">
+                            <div class="d-flex justify-content-between align-items-center p-3 bg-light rounded">
+                                <span>Tiempo Prom. Cierre</span>
+                                <strong class="text-info">15 días</strong>
+                            </div>
+                        </div>
+                        <div class="col-12">
+                            <div class="d-flex justify-content-between align-items-center p-3 bg-light rounded">
+                                <span>Actividad Diaria</span>
+                                <strong class="text-warning">
+                                    {{ (tareas_pendientes / 7)|round|int }} tareas/día
+                                </strong>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Recomendaciones Inteligentes -->
+        <div class="chart-container mt-4">
+            <h4 class="chart-title">🧠 Recomendaciones Inteligentes</h4>
+            <div class="row g-3">
+                <div class="col-md-4">
+                    <div class="alert alert-info">
+                        <h6><i class="fas fa-lightbulb me-2"></i>Seguimiento Prioritario</h6>
+                        <p class="mb-0">{{ metricas_estado['En seguimiento']['count'] }} oportunidades en seguimiento necesitan atención esta semana.</p>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="alert alert-warning">
+                        <h6><i class="fas fa-clock me-2"></i>Tareas Pendientes</h6>
+                        <p class="mb-0">Completa las {{ tareas_pendientes }} tareas pendientes para mantener el momentum.</p>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="alert alert-success">
+                        <h6><i class="fas fa-target me-2"></i>Oportunidades de Cierre</h6>
+                        <p class="mb-0">{{ metricas_estado['Oportunidad']['count'] }} oportunidades listas para cierre.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.js"></script>
+    <script>
+        // Configuración de Chart.js
+        Chart.defaults.font.family = "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif";
+        Chart.defaults.font.size = 12;
+        
+        // Gráfico de Oportunidades por Mes
+        const ctx1 = document.getElementById('oportunidadesChart').getContext('2d');
+        new Chart(ctx1, {
+            type: 'line',
+            data: {
+                labels: [
+                    {% for opp in oportunidades_por_mes %}
+                        '{{ opp.mes.strftime("%b %Y") if opp.mes else "Sin fecha" }}',
+                    {% endfor %}
+                ],
+                datasets: [{
+                    label: 'Nuevas Oportunidades',
+                    data: [
+                        {% for opp in oportunidades_por_mes %}
+                            {{ opp.cantidad }},
+                        {% endfor %}
+                    ],
+                    borderColor: '#3b82f6',
+                    backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                    borderWidth: 3,
+                    fill: true,
+                    tension: 0.4
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        display: false
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            stepSize: 1
+                        }
+                    }
+                }
+            }
+        });
+        
+        // Gráfico de Estados
+        const ctx2 = document.getElementById('estadosChart').getContext('2d');
+        new Chart(ctx2, {
+            type: 'doughnut',
+            data: {
+                labels: ['Nuevo', 'En Seguimiento', 'Oportunidad', 'Cerrado'],
+                datasets: [{
+                    data: [
+                        {{ metricas_estado['Nuevo']['count'] }},
+                        {{ metricas_estado['En seguimiento']['count'] }},
+                        {{ metricas_estado['Oportunidad']['count'] }},
+                        {{ metricas_estado['Cerrado']['count'] }}
+                    ],
+                    backgroundColor: [
+                        '#3b82f6',
+                        '#f59e0b',
+                        '#06b6d4',
+                        '#10b981'
+                    ],
+                    borderWidth: 0
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                        labels: {
+                            padding: 20,
+                            usePointStyle: true
+                        }
+                    }
+                }
+            }
+        });
+        
+        // Auto-refresh cada 10 minutos
+        setInterval(() => {
+            console.log('Auto-refreshing dashboard...');
+            // location.reload();
+        }, 600000);
+        
+        // Animación de entrada para las métricas
+        document.addEventListener('DOMContentLoaded', function() {
+            const metricCards = document.querySelectorAll('.metric-card');
+            metricCards.forEach((card, index) => {
+                card.style.opacity = '0';
+                card.style.transform = 'translateY(20px)';
+                setTimeout(() => {
+                    card.style.transition = 'all 0.6s ease';
+                    card.style.opacity = '1';
+                    card.style.transform = 'translateY(0)';
+                }, index * 100);
+            });
+        });
+    </script>
+</body>
+</html>

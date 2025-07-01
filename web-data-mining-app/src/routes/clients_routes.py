@@ -13,15 +13,18 @@ def clientes_page():
 
 @clients_bp.route('/api/clientes', methods=['GET'])
 def get_clientes():
-    # Permitir filtros opcionales por nombre, email, etc.
+    # Permitir filtros opcionales por nombre, email, término de búsqueda, etc.
     name = request.args.get('name', '').strip().lower()
     email = request.args.get('email', '').strip().lower()
+    search = request.args.get('search', '').strip().lower()
     min_quality = request.args.get('min_quality', '').strip()
     query = Contact.query
     if name:
         query = query.filter(Contact.name.ilike(f'%{name}%'))
     if email:
         query = query.filter(Contact.email.ilike(f'%{email}%'))
+    if search:
+        query = query.filter(Contact.search_query.ilike(f'%{search}%'))
     if min_quality and min_quality.isdigit():
         query = query.filter(Contact.quality_score >= int(min_quality))
     clientes = query.order_by(Contact.created_at.desc()).all()
@@ -31,12 +34,15 @@ def get_clientes():
 def export_clientes():
     name = request.args.get('name', '').strip().lower()
     email = request.args.get('email', '').strip().lower()
+    search = request.args.get('search', '').strip().lower()
     min_quality = request.args.get('min_quality', '').strip()
     query = Contact.query
     if name:
         query = query.filter(Contact.name.ilike(f'%{name}%'))
     if email:
         query = query.filter(Contact.email.ilike(f'%{email}%'))
+    if search:
+        query = query.filter(Contact.search_query.ilike(f'%{search}%'))
     if min_quality and min_quality.isdigit():
         query = query.filter(Contact.quality_score >= int(min_quality))
     clientes = query.order_by(Contact.created_at.desc()).all()
